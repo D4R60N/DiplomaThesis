@@ -19,6 +19,8 @@ import palecek.core.terrain.TerrainGenerator;
 import palecek.core.utils.Constants;
 import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
+import palecek.nishita.NishitaModel;
+import palecek.nishita.NishitaSkyboxModule;
 
 import java.util.Arrays;
 import java.util.List;
@@ -31,6 +33,8 @@ public class TerrainScene implements ILogic {
     private TerrainGenerator terrainGenerator;
     private TerrainRenderer terrainRenderer;
     private SkyboxRenderer skyboxRenderer;
+
+    private float speed = 0.0f;
 
     private Camera camera;
     Vector3f cameraInc;
@@ -48,10 +52,11 @@ public class TerrainScene implements ILogic {
     public void init() throws Exception {
         // Terrain
         terrainRenderer = new TerrainRenderer();
-        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 100, 5, 8);
-        terrainGenerator.createTerrain(0,0,0,sceneManager);
+        int[] lods = {8, 16};
+        short[] lodDistances = {8, 12};
+        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
-        // Skybox
+//         Skybox
         List<String> faces = Arrays.asList(
                 "textures/skybox/px.png",   // +X
                 "textures/skybox/nx.png",    // -X
@@ -60,10 +65,18 @@ public class TerrainScene implements ILogic {
                 "textures/skybox/pz.png",   // +Z
                 "textures/skybox/nz.png"     // -Z
         );
-        Skybox skybox = new Skybox(new SkyboxTexture(faces), objectLoader);
-        skyboxRenderer = new SkyboxRenderer(skybox);
+        Skybox skybox = new Skybox(new SkyboxTexture(faces), objectLoader, 8, 16);
+        NishitaModel nishita = new NishitaModel(
+                new Vector3f(0.0f, 0.1f, 0.99f),
+                new Vector3f(5.8e-1f, 13.5e-1f, 33.1e-1f),
+                new Vector3f(21e-3f, 21e-3f, 21e-3f),
+                8.0f,
+                1.2f,
+                0.76f
+        );
+        skyboxRenderer = new SkyboxRenderer(skybox, "nishita", List.of(new NishitaSkyboxModule(camera, nishita)));
 
-        // renderManager init
+//         renderManager init
         renderManager.init(null, camera, terrainRenderer, skyboxRenderer);
 
         // Light
@@ -77,19 +90,24 @@ public class TerrainScene implements ILogic {
     public void input() {
         cameraInc.set(0, 0, 0);
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_W.val)) {
-            cameraInc.z = -0.02f;
+            cameraInc.z = -speed;
         } else if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_S.val)) {
-            cameraInc.z = 0.02f;
+            cameraInc.z = speed;
         }
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_A.val)) {
-            cameraInc.x = -0.02f;
+            cameraInc.x = -speed;
         } else if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_D.val)) {
-            cameraInc.x = 0.02f;
+            cameraInc.x = speed;
         }
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_Q.val)) {
-            cameraInc.y = -0.02f;
+            cameraInc.y = -speed;
         } else if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_E.val)) {
-            cameraInc.y = 0.02f;
+            cameraInc.y = speed;
+        }
+        if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_LEFT_SHIFT.val)) {
+            speed = 0.1f;
+        } else {
+            speed = 0.05f;
         }
     }
 

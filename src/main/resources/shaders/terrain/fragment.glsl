@@ -46,6 +46,8 @@ uniform float specularPower;
 uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
+uniform sampler2D biomeMap;
+const float cellSize = 0.02;
 
 vec4 ambientC;
 vec4 diffuseC;
@@ -60,7 +62,9 @@ float easeInOutQuint(float x)
 
 void setupColours(Material material, vec2 texCoords) {
     if (material.hasTexture == 0) {
-        ambientC = vec4(fragBiomeColor, 1);
+        ambientC = texture(biomeMap, fragTexCoord+vec2(0, cellSize)) * 0.25f +
+        texture(biomeMap, fragTexCoord+vec2(cellSize, 0)) * 0.25f + texture(biomeMap, fragTexCoord+vec2(0, -cellSize)) * 0.25f +
+        texture(biomeMap, fragTexCoord+vec2(-cellSize, 0)) * 0.25f;;
         diffuseC = ambientC;
         specularC = ambientC;
     } else {
@@ -122,15 +126,15 @@ void main() {
     setupColours(material, fragTexCoord);
     vec4 diffuseSpecularComp = calcDirectionalLight(directionalLight, fragNormal, fragPosition);
 
-//    for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
-//        if (pointLights[i].intensity > 0.0)
-//        diffuseSpecularComp += calcPointLight(pointLights[i], fragNormal, fragPosition);
-//    }
-//
-//    for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
-//        if (spotLights[i].pl.intensity > 0.0)
-//        diffuseSpecularComp += calcSpotLight(spotLights[i], fragNormal, fragPosition);
-//    }
+    for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
+        if (pointLights[i].intensity > 0.0)
+        diffuseSpecularComp += calcPointLight(pointLights[i], fragNormal, fragPosition);
+    }
+
+    for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
+        if (spotLights[i].pl.intensity > 0.0)
+        diffuseSpecularComp += calcSpotLight(spotLights[i], fragNormal, fragPosition);
+    }
 
     fragColor = ambientC * vec4(ambientLight, 1.0) + diffuseSpecularComp;
 }

@@ -8,14 +8,14 @@ out vec2 fragTexCoord;
 out vec3 fragNormal;
 out float fragHeight;
 out vec3 fragPosition;
-out vec3 fragBiomeColor;
 
 uniform mat4 transformationMatrix;
 uniform mat4 projectionMatrix;
 uniform mat4 viewMatrix;
+uniform mat2 rotation;
 uniform sampler2D heightMap;
 uniform sampler2D biomeMap;
-const float cellSize = 0.02;
+uniform float size;
 
 vec3 calculateNormal(float x, float y) {
     float heightL = texture(heightMap, vec2(x - 0.001, y)).r;
@@ -30,16 +30,19 @@ vec3 calculateNormal(float x, float y) {
 }
 
 void main() {
-    vec3 pos = vec3(position.x, (texture(heightMap, texCoord).x)*100, position.z);
+    vec2 center = vec2(size * 0.5);
+    vec2 rotatedTexCoord = rotation * (texCoord - 0.5) + 0.5;
+    vec2 rotatedPosition = rotation * (position.xz - center) + center;
+    vec3 pos = vec3(rotatedPosition.x, (texture(heightMap, rotatedTexCoord).x)*500, rotatedPosition.y);
     vec4 worldPosition = transformationMatrix * vec4(pos, 1.0);
     gl_Position =  projectionMatrix * viewMatrix * worldPosition;
     fragNormal = calculateNormal(position.x, position.y);
     fragPosition = worldPosition.xyz;
-    fragHeight = texture(heightMap, texCoord).r;
-    fragTexCoord = texCoord;
-    fragBiomeColor = texture(biomeMap, texCoord+vec2(0, cellSize)).xyz * 0.25f +
-    texture(biomeMap, texCoord+vec2(cellSize, 0)).xyz * 0.25f + texture(biomeMap, texCoord+vec2(0, -cellSize)).xyz * 0.25f +
-    texture(biomeMap, texCoord+vec2(-cellSize, 0)).xyz * 0.25f;
+    fragHeight = texture(heightMap, rotatedTexCoord).r;
+    fragTexCoord = rotatedTexCoord;
+//    fragBiomeColor = texture(biomeMap, rotatedTexCoord+vec2(0, cellSize)).xyz * 0.25f +
+//    texture(biomeMap, rotatedTexCoord+vec2(cellSize, 0)).xyz * 0.25f + texture(biomeMap, rotatedTexCoord+vec2(0, -cellSize)).xyz * 0.25f +
+//    texture(biomeMap, rotatedTexCoord+vec2(-cellSize, 0)).xyz * 0.25f;
 
 }
 
