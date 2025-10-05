@@ -4,7 +4,8 @@ import palecek.core.ApplicationManager;
 import palecek.core.ILogic;
 import palecek.core.WindowManager;
 import palecek.core.utils.Constants;
-import palecek.scene.TerrainScene;
+import palecek.scene.HosekWilkieScene;
+
 
 public class Main {
 
@@ -13,7 +14,7 @@ public class Main {
 
     public static void main(String[] args) {
         windowManager = new WindowManager(Constants.TITLE, 0, 0, true);
-        scene = new TerrainScene();
+        scene = new HosekWilkieScene();
         ApplicationManager applicationManager = new ApplicationManager();
         try {
             applicationManager.start();

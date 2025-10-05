@@ -38,9 +38,6 @@ vec2 raySphere(vec3 centre, float radius, vec3 rayOrigin, vec3 rayDir) {
     float c = dot (offset, offset) - radius * radius;
 
     float discriminant = b*b-4*a*c;
-    // No intersections: discriminant < 0
-    // 1 intersection: discriminant == 0
-    // 2 intersections: discriminant > 0
     if (discriminant > 0) {
         float s = sqrt(discriminant);
         float dstToSphereNear = max(0, (-b - s) / (2 * a));
