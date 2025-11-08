@@ -20,8 +20,7 @@ import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
 import palecek.hosekWilkie.HosekWilkieModel;
 import palecek.hosekWilkie.HosekWilkieSkyboxModule;
-import palecek.preetham.PreethamModel;
-import palecek.preetham.PreethamSkyboxModule;
+import palecek.utils.SunVector;
 
 import java.util.Arrays;
 import java.util.List;
@@ -70,10 +69,10 @@ public class HosekWilkieScene implements ILogic {
         Skybox skybox = new Skybox(new SkyboxTexture(faces), objectLoader, 8, 16);
 
         int T = 2;
-        int A = 1;
+        int A = 0;
 
         HosekWilkieModel hosekWilkie = new HosekWilkieModel(
-                new Vector3f(0.0f, 1.0f, 0.0f),
+                new SunVector((float) Math.toRadians(0), (float) Math.toRadians(0)),
                 new Vector3f(1.0f, 0.95f, 0.85f),
                 (float)Math.toRadians(0.266),
                 (float)Math.toRadians(1.0),

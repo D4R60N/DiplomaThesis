@@ -36,25 +36,31 @@ vec3 extendedPerez(vec3 A, vec3 B, vec3 C, vec3 D, vec3 E, vec3 F, vec3 G, vec3 
 
 void main() {
     vec3 view = normalize(vViewDir);
+    view = vec3(view.x, max(view.y, 0.0), view.z);
 
     float theta = acos(clamp(view.y, -1.0, 1.0));
     float gamma = acos(clamp(dot(view, sunDir), -1.0, 1.0));
-    float thetaS = acos(clamp(sunDir.y, -1.0, 1.0));
 
-    vec3 F = extendedPerez(A, B, C, D, E, F, G, H, I, theta, gamma);
+    vec3 perez = extendedPerez(A, B, C, D, E, F, G, H, I, theta, gamma);
 
-    vec3 L = Z * F;
+    vec3 L = Z * perez;
+//
+//    float exposure = 0.05;
+//    vec3 mapped = vec3(1.0) - exp(-L * exposure);
+//
+//
+//    vec3 rgb = pow(mapped, vec3(1.0/2.2));
 
     vec3 rgb = L;
 
-//    float Y = L.x;
-//    float x = L.y;
-//    float y = max(L.z, 1e-4);
 //
-//    float X = (x / y) * Y;
-//    float Zc = ((1.0 - x - y) / y) * Y;
-//
+//    float Y = L.z;
+//    float x = L.x;
+//    float y = max(L.y, 1e-4);
+//    float X = (x*Y)/y;
+//    float Zc = ((1-x-y)*Y)/y;
 //    vec3 rgb = CIEtoRGB * vec3(X, Y, Zc);
+
 
     // Additional sun disc and glow
     //todo maybe remove

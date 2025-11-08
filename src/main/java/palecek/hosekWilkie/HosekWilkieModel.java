@@ -2,11 +2,12 @@ package palecek.hosekWilkie;
 
 import org.joml.Vector3f;
 import palecek.data.HosekWilkieData;
+import palecek.utils.SunVector;
 
 import static java.lang.Math.pow;
 
 public class HosekWilkieModel {
-    private Vector3f sunDir;
+    private SunVector sunDir;
     private Vector3f A, B, C, D, E, F, G, H, I;
     private Vector3f sunColor;
     private float sunAngularRadius;
@@ -15,18 +16,17 @@ public class HosekWilkieModel {
     private int albedo;
     private Vector3f Z;
 
-    public HosekWilkieModel(Vector3f sunDir, Vector3f sunColor, float sunAngularRadius, float glowRadius, int turbidity, int albedo) {
+    public HosekWilkieModel(SunVector sunDir, Vector3f sunColor, float sunAngularRadius, float glowRadius, int turbidity, int albedo) {
         this.glowRadius = glowRadius;
         this.sunAngularRadius = sunAngularRadius;
         this.sunColor = sunColor;
-        sunDir.normalize();
         this.sunDir = sunDir;
         this.turbidity = turbidity;
         this.albedo = albedo;
-        float sunElevation = (float) Math.asin(sunDir.y);
-        float x = (float) Math.pow(sunElevation/(Math.PI/2.0f), 1.0f/3.0f);
-        lookUpCoefficients(turbidity, albedo, x);
-        lookUpZenith(turbidity, albedo, x);
+        float elevation = sunDir.getElevation();
+        float elevationNorm = elevation / (float) (Math.PI / 2);
+        lookUpCoefficients(turbidity, albedo, elevationNorm);
+        lookUpZenith(turbidity, albedo, elevationNorm);
     }
 
     private void lookUpCoefficients(int turbidity, int albedo, float x) {
@@ -38,8 +38,8 @@ public class HosekWilkieModel {
         E = getCoefficient(4, turbidity, albedo, x);
         F = getCoefficient(5, turbidity, albedo, x);
         G = getCoefficient(6, turbidity, albedo, x);
-        H = getCoefficient(7, turbidity, albedo, x);
-        I = getCoefficient(8, turbidity, albedo, x);
+        H = getCoefficient(8, turbidity, albedo, x);
+        I = getCoefficient(7, turbidity, albedo, x);
     }
 
     private Vector3f getCoefficient(int coeffIndex, int turbidity, int albedo, float elevationNorm) {
@@ -53,14 +53,15 @@ public class HosekWilkieModel {
 
         return new Vector3f(r, g, b);
     }
+
     float evalBezier(float[] ctrl, float x) {
         float inv = 1.0f - x;
-        return (float) (ctrl[0]*pow(inv,5)
-                        + ctrl[1]*5*pow(inv,4)*x
-                        + ctrl[2]*10*pow(inv,3)*pow(x,2)
-                        + ctrl[3]*10*pow(inv,2)*pow(x,3)
-                        + ctrl[4]*5*inv*pow(x,4)
-                        + ctrl[5]*pow(x,5));
+        return (float) (ctrl[0] * pow(inv, 5)
+                + ctrl[1] * 5 * pow(inv, 4) * x
+                + ctrl[2] * 10 * pow(inv, 3) * pow(x, 2)
+                + ctrl[3] * 10 * pow(inv, 2) * pow(x, 3)
+                + ctrl[4] * 5 * inv * pow(x, 4)
+                + ctrl[5] * pow(x, 5));
     }
 
     float[] getBezierControlCoefficients(double[] dataset, int albedo, int turbidity, int coeffIndex) {
@@ -93,19 +94,20 @@ public class HosekWilkieModel {
 
     public void rotateSun(float rotateBy) {
         float angleRad = (float) Math.toRadians(rotateBy);
-        sunDir.rotateZ(angleRad).normalize();
-        float sunElevation = (float) Math.asin(sunDir.y);
-        float x = (float) Math.pow(sunElevation/(Math.PI/2.0f), 1.0f/3.0f);
-        lookUpCoefficients(turbidity, albedo, x);
-        lookUpZenith(turbidity, albedo, x);
+        sunDir.rotate(new Vector3f(1, 0, 0), angleRad);
+        float elevation = sunDir.getElevation();
+        float elevationNorm = elevation / (float) (Math.PI / 2);
+        System.out.println("Elevation: " + elevationNorm);
+        lookUpCoefficients(turbidity, albedo, elevationNorm);
+        lookUpZenith(turbidity, albedo, elevationNorm);
     }
 
 
-    public Vector3f getSunDir() {
+    public SunVector getSunDir() {
         return sunDir;
     }
 
-    public void setSunDir(Vector3f sunDir) {
+    public void setSunDir(SunVector sunDir) {
         this.sunDir = sunDir;
     }
 
