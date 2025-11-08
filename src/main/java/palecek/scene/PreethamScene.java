@@ -7,7 +7,6 @@ import palecek.core.*;
 import palecek.core.entity.Entity;
 import palecek.core.entity.SceneManager;
 import palecek.core.lighting.DirectionalLight;
-import palecek.core.lighting.PointLight;
 import palecek.core.planet.Planet;
 import palecek.core.rendering.RenderManager;
 import palecek.core.rendering.SkyboxRenderer;
@@ -18,17 +17,14 @@ import palecek.core.terrain.Terrain;
 import palecek.core.terrain.TerrainGenerator;
 import palecek.core.utils.Constants;
 import palecek.core.utils.RenderMode;
-import palecek.core.utils.Transformation;
 import palecek.core.utils.glfw.GLFWEnum;
-import palecek.nishita.NishitaModel;
-import palecek.nishita.NishitaSkyboxModule;
 import palecek.preetham.PreethamModel;
 import palecek.preetham.PreethamSkyboxModule;
 
 import java.util.Arrays;
 import java.util.List;
 
-public class TerrainScene implements ILogic {
+public class PreethamScene implements ILogic {
     private final RenderManager renderManager;
     private final ObjectLoader objectLoader;
     private final WindowManager windowManager;
@@ -43,7 +39,7 @@ public class TerrainScene implements ILogic {
     private Camera camera;
     Vector3f cameraInc;
 
-    public TerrainScene() {
+    public PreethamScene() {
         renderManager = new RenderManager();
         windowManager = Main.getWindowManager();
         objectLoader = new ObjectLoader();
@@ -70,15 +66,6 @@ public class TerrainScene implements ILogic {
                 "textures/skybox/nz.png"     // -Z
         );
         Skybox skybox = new Skybox(new SkyboxTexture(faces), objectLoader, 8, 16);
-//        NishitaModel nishita = new NishitaModel(
-//                new Vector3f(0.0f, 0.1f, 0.99f),
-//                new Vector3f(5.8e-1f, 13.5e-1f, 33.1e-1f),
-//                new Vector3f(21e-3f, 21e-3f, 21e-3f),
-//                8.0f,
-//                1.2f,
-//                0.76f
-//        );
-//        skyboxRenderer = new SkyboxRenderer(skybox, "nishita", List.of(new NishitaSkyboxModule(camera, nishita)));
 
         float T = 2.0f;
         Vector3f A = new Vector3f(0.1787f*T - 1.4630f,  -0.0193f*T - 0.2592f, -0.0167f*T - 0.2608f);

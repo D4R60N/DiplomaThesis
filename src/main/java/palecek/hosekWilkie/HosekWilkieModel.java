@@ -4,6 +4,8 @@ import org.joml.Vector3f;
 import palecek.data.HosekWilkieData;
 import palecek.utils.SunVector;
 
+import java.util.Arrays;
+
 import static java.lang.Math.pow;
 
 public class HosekWilkieModel {
@@ -24,82 +26,74 @@ public class HosekWilkieModel {
         this.turbidity = turbidity;
         this.albedo = albedo;
         float elevation = sunDir.getElevation();
-        float elevationNorm = elevation / (float) (Math.PI / 2);
-        lookUpCoefficients(turbidity, albedo, elevationNorm);
-        lookUpZenith(turbidity, albedo, elevationNorm);
+        lookUpCoefficients(turbidity, albedo, elevation);
     }
 
-    private void lookUpCoefficients(int turbidity, int albedo, float x) {
-
-        A = getCoefficient(0, turbidity, albedo, x);
-        B = getCoefficient(1, turbidity, albedo, x);
-        C = getCoefficient(2, turbidity, albedo, x);
-        D = getCoefficient(3, turbidity, albedo, x);
-        E = getCoefficient(4, turbidity, albedo, x);
-        F = getCoefficient(5, turbidity, albedo, x);
-        G = getCoefficient(6, turbidity, albedo, x);
-        H = getCoefficient(8, turbidity, albedo, x);
-        I = getCoefficient(7, turbidity, albedo, x);
+    private void lookUpCoefficients(int turbidity, int albedo, float elevation) {
+        A = getCoefficient(0, turbidity, albedo, elevation);
+        B = getCoefficient(1, turbidity, albedo, elevation);
+        C = getCoefficient(2, turbidity, albedo, elevation);
+        D = getCoefficient(3, turbidity, albedo, elevation);
+        E = getCoefficient(4, turbidity, albedo, elevation);
+        F = getCoefficient(5, turbidity, albedo, elevation);
+        G = getCoefficient(6, turbidity, albedo, elevation);
+        H = getCoefficient(8, turbidity, albedo, elevation);
+        I = getCoefficient(7, turbidity, albedo, elevation);
+        Z = getZenith(turbidity, albedo, elevation);
     }
 
-    private Vector3f getCoefficient(int coeffIndex, int turbidity, int albedo, float elevationNorm) {
-        float[] ctrlR = getBezierControlCoefficients(HosekWilkieData.datasetRGB1, albedo, turbidity, coeffIndex);
-        float[] ctrlG = getBezierControlCoefficients(HosekWilkieData.datasetRGB2, albedo, turbidity, coeffIndex);
-        float[] ctrlB = getBezierControlCoefficients(HosekWilkieData.datasetRGB3, albedo, turbidity, coeffIndex);
-
-        float r = evalBezier(ctrlR, elevationNorm);
-        float g = evalBezier(ctrlG, elevationNorm);
-        float b = evalBezier(ctrlB, elevationNorm);
+    private Vector3f getCoefficient(int coeffIndex, int turbidity, int albedo, float elevation) {
+        float r = (float) evaluate(HosekWilkieData.datasetRGB1, coeffIndex, 9, turbidity, albedo, elevation);
+        float g = (float) evaluate(HosekWilkieData.datasetRGB2, coeffIndex, 9, turbidity, albedo, elevation);
+        float b = (float) evaluate(HosekWilkieData.datasetRGB3, coeffIndex, 9, turbidity, albedo, elevation);
 
         return new Vector3f(r, g, b);
     }
 
-    float evalBezier(float[] ctrl, float x) {
-        float inv = 1.0f - x;
-        return (float) (ctrl[0] * pow(inv, 5)
-                + ctrl[1] * 5 * pow(inv, 4) * x
-                + ctrl[2] * 10 * pow(inv, 3) * pow(x, 2)
-                + ctrl[3] * 10 * pow(inv, 2) * pow(x, 3)
-                + ctrl[4] * 5 * inv * pow(x, 4)
-                + ctrl[5] * pow(x, 5));
+    private Vector3f getZenith(int turbidity, int albedo, float elevation) {
+        float r = (float) evaluate(HosekWilkieData.datasetRGBRad1, 0, 1, turbidity, albedo, elevation);
+        float g = (float) evaluate(HosekWilkieData.datasetRGBRad2, 0, 1, turbidity, albedo, elevation);
+        float b = (float) evaluate(HosekWilkieData.datasetRGBRad3, 0, 1, turbidity, albedo, elevation);
+
+        return new Vector3f(r, g, b);
     }
 
-    float[] getBezierControlCoefficients(double[] dataset, int albedo, int turbidity, int coeffIndex) {
-        int base = ((albedo * 10 + (turbidity - 1)) * 9 + coeffIndex) * 6;
-        float[] result = new float[6];
-        for (int i = 0; i < 6; i++)
-            result[i] = (float) dataset[base + i];
-        return result;
+
+    private double evaluateSpline(double[] dataset, int baseIndex, int stride, double value) {
+        return  Math.pow(1 - value, 5) * dataset[baseIndex + 0] +
+                5 * Math.pow(1 - value, 4) * Math.pow(value, 1) * dataset[baseIndex + stride] +
+                10 * Math.pow(1 - value, 3) * Math.pow(value, 2) * dataset[baseIndex + 2 * stride] +
+                10 * Math.pow(1 - value, 2) * Math.pow(value, 3) * dataset[baseIndex + 3 * stride] +
+                5 * Math.pow(1 - value, 1) * Math.pow(value, 4) * dataset[baseIndex + 4 * stride] +
+                Math.pow(value, 5) * dataset[baseIndex + 5 * stride];
     }
 
-    private void lookUpZenith(int turbidity, int albedo, float x) {
-        float Yz = getZenithComponent(HosekWilkieData.datasetRGBRad1, albedo, turbidity, x);
-        float xz = getZenithComponent(HosekWilkieData.datasetRGBRad2, albedo, turbidity, x);
-        float yz = getZenithComponent(HosekWilkieData.datasetRGBRad3, albedo, turbidity, x);
-        Z = new Vector3f(Yz, xz, yz);
+    private double evaluate(double[] datasetRGB, int coeffIndex, int stride, float turbidity, float albedo, float sunTheta) {
+        double elevationK = Math.pow(Math.max(0f, 1f - sunTheta / (Math.PI / 2f)), 1.0/3.0);
+        int turbidity0 = Math.min(Math.max((int)turbidity, 1), 10);
+        int turbidity1 = Math.min(turbidity0 + 1, 10);
+        float turbidityK = Math.min(Math.max(turbidity - turbidity0, 0f), 1f);
+
+        int baseIndex0 = coeffIndex + stride * 6 * (turbidity0 - 1);
+        int baseIndex1 = coeffIndex + stride * 6 * (turbidity1 - 1);
+
+        double a0t0 = evaluateSpline(datasetRGB, baseIndex0, stride, elevationK);
+        double a1t0 = evaluateSpline(datasetRGB, baseIndex0 + stride * 6 * 10, stride, elevationK);
+        double a0t1 = evaluateSpline(datasetRGB, baseIndex1, stride, elevationK);
+        double a1t1 = evaluateSpline(datasetRGB, baseIndex1 + stride * 6 * 10, stride, elevationK);
+
+        return a0t0 * (1 - albedo) * (1 - turbidityK) +
+                a1t0 * albedo * (1 - turbidityK) +
+                a0t1 * (1 - albedo) * turbidityK +
+                a1t1 * albedo * turbidityK;
     }
 
-    float[] getBezierControlZeniths(double[] dataset, int albedo, int turbidity) {
-        int base = (albedo * 10 + (turbidity - 1)) * 6;
-        float[] result = new float[6];
-        for (int i = 0; i < 6; i++)
-            result[i] = (float) dataset[base + i];
-        return result;
-    }
-
-    private float getZenithComponent(double[] dataset, int albedo, int turbidity, float elevationNorm) {
-        float[] ctrl = getBezierControlZeniths(dataset, albedo, turbidity);
-        return evalBezier(ctrl, elevationNorm);
-    }
 
     public void rotateSun(float rotateBy) {
         float angleRad = (float) Math.toRadians(rotateBy);
         sunDir.rotate(new Vector3f(1, 0, 0), angleRad);
         float elevation = sunDir.getElevation();
-        float elevationNorm = elevation / (float) (Math.PI / 2);
-        System.out.println("Elevation: " + elevationNorm);
-        lookUpCoefficients(turbidity, albedo, elevationNorm);
-        lookUpZenith(turbidity, albedo, elevationNorm);
+        lookUpCoefficients(turbidity, albedo, elevation);
     }
 
 
