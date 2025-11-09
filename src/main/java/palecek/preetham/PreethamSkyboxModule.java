@@ -39,7 +39,7 @@ public class PreethamSkyboxModule implements IShaderModule {
         Matrix4f view = Transformation.getViewMatrix(this.camera);
         view.m30(0.0F).m31(0.0F).m32(0.0F);
         shaderManager.setUniform("viewMatrix", view);
-        shaderManager.setUniform("sunDir", model.getSunDir());
+        shaderManager.setUniform("sunDir", model.getSunDir().getDirection());
         shaderManager.setUniform("A", model.getA());
         shaderManager.setUniform("B", model.getB());
         shaderManager.setUniform("C", model.getC());

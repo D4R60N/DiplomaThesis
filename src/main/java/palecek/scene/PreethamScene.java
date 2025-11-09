@@ -20,6 +20,7 @@ import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
 import palecek.preetham.PreethamModel;
 import palecek.preetham.PreethamSkyboxModule;
+import palecek.utils.SunVector;
 
 import java.util.Arrays;
 import java.util.List;
@@ -77,7 +78,7 @@ public class PreethamScene implements ILogic {
 
         Vector3f Z = PreethamModel.computeZenith(T, sunAngle);
         PreethamModel preetham = new PreethamModel(
-                new Vector3f(0.0f, 1.0f, 0.0f),
+                new SunVector((float) Math.toRadians(0), (float) Math.toRadians(90)),
                 A,
                 B,
                 C,

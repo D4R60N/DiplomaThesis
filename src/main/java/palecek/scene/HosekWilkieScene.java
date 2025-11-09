@@ -72,10 +72,10 @@ public class HosekWilkieScene implements ILogic {
         int A = 0;
 
         HosekWilkieModel hosekWilkie = new HosekWilkieModel(
-                new SunVector((float) Math.toRadians(0), (float) Math.toRadians(0)),
+                new SunVector((float) Math.toRadians(0), (float) Math.toRadians(90)),
                 new Vector3f(1.0f, 0.95f, 0.85f),
-                (float)Math.toRadians(0.266),
-                (float)Math.toRadians(1.0),
+                (float)Math.toRadians(0.66),
+                (float)Math.toRadians(2.0),
                 T,
                 A
         );

@@ -69,7 +69,7 @@ public class HosekWilkieModel {
     }
 
     private double evaluate(double[] datasetRGB, int coeffIndex, int stride, float turbidity, float albedo, float sunTheta) {
-        double elevationK = Math.pow(Math.max(0f, 1f - sunTheta / (Math.PI / 2f)), 1.0/3.0);
+        double elevationK = 1-Math.pow(Math.max(0f, 1f - sunTheta / (Math.PI / 2f)), 1.0/3.0);
         int turbidity0 = Math.min(Math.max((int)turbidity, 1), 10);
         int turbidity1 = Math.min(turbidity0 + 1, 10);
         float turbidityK = Math.min(Math.max(turbidity - turbidity0, 0f), 1f);

@@ -1,9 +1,10 @@
 package palecek.preetham;
 
 import org.joml.Vector3f;
+import palecek.utils.SunVector;
 
 public class PreethamModel {
-    private Vector3f sunDir;
+    private SunVector sunDir;
     private Vector3f A, B, C, D, E;
     private Vector3f Z;
     private Vector3f sunColor;
@@ -12,7 +13,7 @@ public class PreethamModel {
     private float turbidity;
     private float sunAngle;
 
-    public PreethamModel(Vector3f sunDir, Vector3f A, Vector3f B, Vector3f C, Vector3f D, Vector3f E, Vector3f Z, Vector3f sunColor, float sunAngularRadius, float glowRadius, float turbidity, float sunAngle) {
+    public PreethamModel(SunVector sunDir, Vector3f A, Vector3f B, Vector3f C, Vector3f D, Vector3f E, Vector3f Z, Vector3f sunColor, float sunAngularRadius, float glowRadius, float turbidity, float sunAngle) {
         this.glowRadius = glowRadius;
         this.sunAngularRadius = sunAngularRadius;
         this.sunColor = sunColor;
@@ -29,20 +30,19 @@ public class PreethamModel {
 
     public void rotateSun(float rotateBy) {
         float angleRad = (float) Math.toRadians(rotateBy);
-        sunDir.rotateZ(angleRad);
-
+        sunDir.rotate(new Vector3f(1, 0, 0), angleRad);
         //axValue * Math.abs(1 - 2 * ((t % (2 * maxValue)) / (float)(2 * maxValue)))
-        sunAngle = (float) Math.toDegrees(Math.acos(sunDir.y))+90;
+        sunAngle = (float) Math.toDegrees(Math.acos(sunDir.getDirection().y))+90;
         sunAngle = 90 * Math.abs(1-2*((sunAngle % 180)/180.0f));
         Z = computeZenith(turbidity, (float) Math.toRadians(sunAngle));
     }
 
 
-    public Vector3f getSunDir() {
+    public SunVector getSunDir() {
         return sunDir;
     }
 
-    public void setSunDir(Vector3f sunDir) {
+    public void setSunDir(SunVector sunDir) {
         this.sunDir = sunDir;
     }
 
