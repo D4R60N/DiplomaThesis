@@ -1,4 +1,4 @@
-package palecek.scene;
+package palecek.logic;
 
 import org.joml.Vector2f;
 import org.joml.Vector3f;
@@ -6,6 +6,7 @@ import palecek.Main;
 import palecek.core.*;
 import palecek.core.entity.Entity;
 import palecek.core.entity.SceneManager;
+import palecek.core.gui.ImGuiLayer;
 import palecek.core.lighting.DirectionalLight;
 import palecek.core.planet.Planet;
 import palecek.core.rendering.RenderManager;
@@ -18,6 +19,7 @@ import palecek.core.terrain.TerrainGenerator;
 import palecek.core.utils.Constants;
 import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
+import palecek.gui.PauseMenu;
 import palecek.preetham.PreethamModel;
 import palecek.preetham.PreethamSkyboxModule;
 import palecek.utils.SunVector;
@@ -28,12 +30,15 @@ import java.util.List;
 public class PreethamScene implements ILogic {
     private final RenderManager renderManager;
     private final ObjectLoader objectLoader;
-    private final WindowManager windowManager;
+    private WindowManager windowManager;
     private final SceneManager sceneManager;
     private TerrainGenerator terrainGenerator;
     private TerrainRenderer terrainRenderer;
     private SkyboxRenderer skyboxRenderer;
     private PreethamModel preethamModel;
+    private ImGuiLayer imGuiLayer;
+    private boolean showGui;
+    private LogicManager logicManager;
 
     private float speed = 0.0f;
 
@@ -42,7 +47,6 @@ public class PreethamScene implements ILogic {
 
     public PreethamScene() {
         renderManager = new RenderManager();
-        windowManager = Main.getWindowManager();
         objectLoader = new ObjectLoader();
         camera = new Camera();
         cameraInc = new Vector3f(0, 0, 0);
@@ -50,7 +54,11 @@ public class PreethamScene implements ILogic {
     }
 
     @Override
-    public void init() throws Exception {
+    public void init(MouseInput mouseInput) throws Exception {
+        windowManager = Main.getWindowManager();
+        logicManager = Main.getLogicManager();
+        showGui = false;
+        imGuiLayer = new PauseMenu(windowManager.getWindow(), logicManager, () -> showGui = false);
         // Terrain
         terrainRenderer = new TerrainRenderer();
         int[] lods = {8, 16};
@@ -105,7 +113,7 @@ public class PreethamScene implements ILogic {
     }
 
     @Override
-    public void input() {
+    public void input(MouseInput mouseInput) {
         cameraInc.set(0, 0, 0);
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_W.val)) {
             cameraInc.z = -speed;
@@ -127,6 +135,15 @@ public class PreethamScene implements ILogic {
         }
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_F.val)) {
             preethamModel.rotateSun(1);
+        }
+        if (windowManager.isKeyTyped(GLFWEnum.GLFW_KEY_TAB.val)) {
+            if (!showGui) {
+                mouseInput.redirectMouseToGui(imGuiLayer.getImGuiGlfw());
+            }
+            else {
+                mouseInput.restoreMouseForApp();
+            }
+            showGui = !showGui;
         }
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_LEFT_SHIFT.val)) {
             speed = 0.1f;
@@ -154,9 +171,6 @@ public class PreethamScene implements ILogic {
             planet.incRotationAngle(0.1f);
         }
 
-        for (Entity entity : sceneManager.getEntities()) {
-            renderManager.processEntity(entity);
-        }
         for (Terrain terrain : sceneManager.getTerrains()) {
             terrainRenderer.processTerrain(terrain);
         }
@@ -165,10 +179,13 @@ public class PreethamScene implements ILogic {
     @Override
     public void render() {
         renderManager.render(camera, sceneManager, RenderMode.GL_TRIANGLES.getMode());
+        if (showGui)
+            imGuiLayer.render();
     }
 
     @Override
     public void cleanup() {
+        imGuiLayer.dispose();
         renderManager.cleanup();
         objectLoader.cleanUp();
     }
