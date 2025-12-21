@@ -2,11 +2,8 @@ package palecek.hosekWilkie;
 
 import org.joml.Vector3f;
 import palecek.data.HosekWilkieData;
+import palecek.data.HosekWilkieDataRGB;
 import palecek.utils.SunVector;
-
-import java.util.Arrays;
-
-import static java.lang.Math.pow;
 
 public class HosekWilkieModel {
     private SunVector sunDir;
@@ -14,11 +11,12 @@ public class HosekWilkieModel {
     private Vector3f sunColor;
     private float sunAngularRadius;
     private float glowRadius;
-    private int turbidity;
+    private float turbidity;
     private int albedo;
     private Vector3f Z;
+    private HosekWilkieData data = new HosekWilkieDataRGB();
 
-    public HosekWilkieModel(SunVector sunDir, Vector3f sunColor, float sunAngularRadius, float glowRadius, int turbidity, int albedo) {
+    public HosekWilkieModel(SunVector sunDir, Vector3f sunColor, float sunAngularRadius, float glowRadius, float turbidity, int albedo) {
         this.glowRadius = glowRadius;
         this.sunAngularRadius = sunAngularRadius;
         this.sunColor = sunColor;
@@ -29,7 +27,7 @@ public class HosekWilkieModel {
         lookUpCoefficients(turbidity, albedo, elevation);
     }
 
-    private void lookUpCoefficients(int turbidity, int albedo, float elevation) {
+    private void lookUpCoefficients(float turbidity, int albedo, float elevation) {
         A = getCoefficient(0, turbidity, albedo, elevation);
         B = getCoefficient(1, turbidity, albedo, elevation);
         C = getCoefficient(2, turbidity, albedo, elevation);
@@ -42,18 +40,18 @@ public class HosekWilkieModel {
         Z = getZenith(turbidity, albedo, elevation);
     }
 
-    private Vector3f getCoefficient(int coeffIndex, int turbidity, int albedo, float elevation) {
-        float r = (float) evaluate(HosekWilkieData.datasetRGB1, coeffIndex, 9, turbidity, albedo, elevation);
-        float g = (float) evaluate(HosekWilkieData.datasetRGB2, coeffIndex, 9, turbidity, albedo, elevation);
-        float b = (float) evaluate(HosekWilkieData.datasetRGB3, coeffIndex, 9, turbidity, albedo, elevation);
+    private Vector3f getCoefficient(int coeffIndex, float turbidity, int albedo, float elevation) {
+        float r = (float) evaluate(data.getDataset1(), coeffIndex, 9, turbidity, albedo, elevation);
+        float g = (float) evaluate(data.getDataset2(), coeffIndex, 9, turbidity, albedo, elevation);
+        float b = (float) evaluate(data.getDataset3(), coeffIndex, 9, turbidity, albedo, elevation);
 
         return new Vector3f(r, g, b);
     }
 
-    private Vector3f getZenith(int turbidity, int albedo, float elevation) {
-        float r = (float) evaluate(HosekWilkieData.datasetRGBRad1, 0, 1, turbidity, albedo, elevation);
-        float g = (float) evaluate(HosekWilkieData.datasetRGBRad2, 0, 1, turbidity, albedo, elevation);
-        float b = (float) evaluate(HosekWilkieData.datasetRGBRad3, 0, 1, turbidity, albedo, elevation);
+    private Vector3f getZenith(float turbidity, int albedo, float elevation) {
+        float r = (float) evaluate(data.getDatasetRad1(), 0, 1, turbidity, albedo, elevation);
+        float g = (float) evaluate(data.getDatasetRad2(), 0, 1, turbidity, albedo, elevation);
+        float b = (float) evaluate(data.getDatasetRad3(), 0, 1, turbidity, albedo, elevation);
 
         return new Vector3f(r, g, b);
     }
@@ -61,10 +59,14 @@ public class HosekWilkieModel {
 
     private double evaluateSpline(double[] dataset, int baseIndex, int stride, double value) {
         return  Math.pow(1 - value, 5) * dataset[baseIndex + 0] +
-                5 * Math.pow(1 - value, 4) * Math.pow(value, 1) * dataset[baseIndex + stride] +
-                10 * Math.pow(1 - value, 3) * Math.pow(value, 2) * dataset[baseIndex + 2 * stride] +
-                10 * Math.pow(1 - value, 2) * Math.pow(value, 3) * dataset[baseIndex + 3 * stride] +
-                5 * Math.pow(1 - value, 1) * Math.pow(value, 4) * dataset[baseIndex + 4 * stride] +
+                5 * Math.pow(1 - value, 4) * Math.pow(value, 1)
+                        * dataset[baseIndex + stride] +
+                10 * Math.pow(1 - value, 3) * Math.pow(value, 2)
+                        * dataset[baseIndex + 2 * stride] +
+                10 * Math.pow(1 - value, 2) * Math.pow(value, 3)
+                        * dataset[baseIndex + 3 * stride] +
+                5 * Math.pow(1 - value, 1) * Math.pow(value, 4)
+                        * dataset[baseIndex + 4 * stride] +
                 Math.pow(value, 5) * dataset[baseIndex + 5 * stride];
     }
 
@@ -209,11 +211,11 @@ public class HosekWilkieModel {
         this.glowRadius = glowRadius;
     }
 
-    public int getTurbidity() {
+    public float getTurbidity() {
         return turbidity;
     }
 
-    public void setTurbidity(int turbidity) {
+    public void setTurbidity(float turbidity) {
         this.turbidity = turbidity;
     }
 

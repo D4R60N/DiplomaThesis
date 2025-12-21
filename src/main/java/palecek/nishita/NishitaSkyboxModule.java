@@ -6,6 +6,7 @@ import palecek.core.Camera;
 import palecek.core.ShaderManager;
 import palecek.core.entity.IShaderModule;
 import palecek.core.utils.Counter;
+import palecek.core.utils.RenderTarget;
 import palecek.core.utils.Transformation;
 
 public class NishitaSkyboxModule implements IShaderModule {
@@ -34,13 +35,11 @@ public class NishitaSkyboxModule implements IShaderModule {
         shaderManager.setUniform("projectionMatrix", Main.getWindowManager().getProjectionMatrix());
         Matrix4f view = Transformation.getViewMatrix(this.camera);
         view.m30(0.0F).m31(0.0F).m32(0.0F);
-        shaderManager.setUniform("viewMatrix", view);
-        shaderManager.setUniform("sunDir", model.getSunDir());
-        shaderManager.setUniform("betaR", model.getBetaR());
-        shaderManager.setUniform("betaM", model.getBetaM());
-        shaderManager.setUniform("HR", model.getHR());
-        shaderManager.setUniform("HM", model.getHM());
-        shaderManager.setUniform("g", model.getG());
+    }
+
+    @Override
+    public void setUniforms(ShaderManager shaderManager, RenderTarget renderTarget) {
+
     }
 
     @Override

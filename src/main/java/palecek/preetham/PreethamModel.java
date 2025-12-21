@@ -31,7 +31,6 @@ public class PreethamModel {
     public void rotateSun(float rotateBy) {
         float angleRad = (float) Math.toRadians(rotateBy);
         sunDir.rotate(new Vector3f(1, 0, 0), angleRad);
-        //axValue * Math.abs(1 - 2 * ((t % (2 * maxValue)) / (float)(2 * maxValue)))
         sunAngle = (float) Math.toDegrees(Math.acos(sunDir.getDirection().y))+90;
         sunAngle = 90 * Math.abs(1-2*((sunAngle % 180)/180.0f));
         Z = computeZenith(turbidity, (float) Math.toRadians(sunAngle));

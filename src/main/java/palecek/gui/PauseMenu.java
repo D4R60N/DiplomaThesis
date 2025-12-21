@@ -57,6 +57,11 @@ public class PauseMenu extends ImGuiLayer {
             closeCallback.execute();
         }
 
+        if (centeredButton("Nishita", 200, 40)) {
+            logicManager.switchToLogic(3);
+            closeCallback.execute();
+        }
+
         if (centeredButton("Main Menu", 200, 40)) {
             logicManager.switchToLogic(0);
             closeCallback.execute();

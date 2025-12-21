@@ -6,6 +6,7 @@ import palecek.core.Camera;
 import palecek.core.ShaderManager;
 import palecek.core.entity.IShaderModule;
 import palecek.core.utils.Counter;
+import palecek.core.utils.RenderTarget;
 import palecek.core.utils.Transformation;
 import palecek.preetham.PreethamModel;
 
@@ -58,6 +59,11 @@ public class HosekWilkieSkyboxModule implements IShaderModule {
         shaderManager.setUniform("sunColor", model.getSunColor());
         shaderManager.setUniform("sunAngularRadius", model.getSunAngularRadius());
         shaderManager.setUniform("glowRadius", model.getGlowRadius());
+    }
+
+    @Override
+    public void setUniforms(ShaderManager shaderManager, RenderTarget renderTarget) {
+
     }
 
     @Override

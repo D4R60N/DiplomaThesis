@@ -4,11 +4,9 @@ import org.joml.Vector2f;
 import org.joml.Vector3f;
 import palecek.Main;
 import palecek.core.*;
-import palecek.core.entity.Entity;
 import palecek.core.entity.SceneManager;
 import palecek.core.gui.ImGuiLayer;
 import palecek.core.lighting.DirectionalLight;
-import palecek.core.planet.Planet;
 import palecek.core.rendering.RenderManager;
 import palecek.core.rendering.SkyboxRenderer;
 import palecek.core.rendering.TerrainRenderer;
@@ -77,7 +75,7 @@ public class HosekWilkieScene implements ILogic {
         );
         Skybox skybox = new Skybox(new SkyboxTexture(faces), objectLoader, 8, 16);
 
-        int T = 2;
+        float T = 2.50f;
         int A = 0;
 
         HosekWilkieModel hosekWilkie = new HosekWilkieModel(
@@ -154,10 +152,6 @@ public class HosekWilkieScene implements ILogic {
         if (mouseInput.isRightButtonPressed()) {
             Vector2f rotVec = mouseInput.getDisplVec();
             camera.moveRotation(rotVec.x * Constants.MOUSE_SENSITIVITY, rotVec.y * Constants.MOUSE_SENSITIVITY, 0);
-        }
-
-        for (Planet planet : sceneManager.getPlanets()) {
-            planet.incRotationAngle(0.1f);
         }
 
         for (Terrain terrain : sceneManager.getTerrains()) {
