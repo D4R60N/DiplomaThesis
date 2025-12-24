@@ -1,6 +1,6 @@
 package palecek.data;
 
-public class HosekWilkieDataCIEXYZ {
+public class HosekWilkieDataCIEXYZ implements HosekWilkieData {
     private final double[] dataset1 =
             {
                     // albedo 0, turbidity 1
@@ -3744,4 +3744,34 @@ public class HosekWilkieDataCIEXYZ {
                     5.936468e+001,
                     3.110255e+001,
             };
+
+    @Override
+    public double[] getDataset1() {
+        return dataset1;
+    }
+
+    @Override
+    public double[] getDataset2() {
+        return dataset2;
+    }
+
+    @Override
+    public double[] getDataset3() {
+        return dataset3;
+    }
+
+    @Override
+    public double[] getDatasetRad1() {
+        return datasetRad1;
+    }
+
+    @Override
+    public double[] getDatasetRad2() {
+        return datasetRad2;
+    }
+
+    @Override
+    public double[] getDatasetRad3() {
+        return datasetRad3;
+    }
 }

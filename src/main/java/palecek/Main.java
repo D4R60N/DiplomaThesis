@@ -4,10 +4,7 @@ import palecek.core.ApplicationManager;
 import palecek.core.LogicManager;
 import palecek.core.WindowManager;
 import palecek.core.utils.Constants;
-import palecek.logic.HosekWilkieScene;
-import palecek.logic.MainMenuScene;
-import palecek.logic.NishitaScene;
-import palecek.logic.PreethamScene;
+import palecek.logic.*;
 
 import java.util.List;
 
@@ -19,7 +16,7 @@ public class Main {
                     new MainMenuScene(),
                     new PreethamScene(),
                     new HosekWilkieScene(),
-                    new NishitaScene()
+                    new BrunetonScene()
             )
     );
 

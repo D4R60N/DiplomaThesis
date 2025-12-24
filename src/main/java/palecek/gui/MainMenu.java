@@ -57,7 +57,7 @@ public class MainMenu extends ImGuiLayer {
             mouseInput.restoreMouseForApp();
         }
 
-        if (centeredButton("Nishita", 200, 40)) {
+        if (centeredButton("Bruneton", 200, 40)) {
             logicManager.switchToLogic(3);
             mouseInput.restoreMouseForApp();
         }

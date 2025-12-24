@@ -51,7 +51,7 @@ void main() {
     float X = (x / y) * Y;
     float Zc = ((1.0 - x - y) / y) * Y;
 
-    vec3 rgb = CIEtoRGB * vec3(X, Y, Zc);
+    vec3 linearRGB = CIEtoRGB * vec3(X, Y, Zc);
 
     // Additional sun disc and glow
     //todo maybe removeew
@@ -63,10 +63,10 @@ void main() {
 
     float glow = smoothstep(glowRadius, sunAngularRadius, sunAngle);
 
-    vec3 sunContribution = sunColor * (sunDisc + 0.2 * glow);
+    linearRGB = max(linearRGB, 0.0) + (sunColor * (sunDisc + 0.2 * glow));
 
-    rgb += sunContribution;
 
+    vec3 rgb = pow(linearRGB, vec3(1.0 / 2.2));
     rgb = max(rgb, vec3(0.0));
 
     FragColor = vec4(rgb, 1.0);

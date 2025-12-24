@@ -2,6 +2,7 @@ package palecek.hosekWilkie;
 
 import org.joml.Vector3f;
 import palecek.data.HosekWilkieData;
+import palecek.data.HosekWilkieDataCIEXYZ;
 import palecek.data.HosekWilkieDataRGB;
 import palecek.utils.SunVector;
 

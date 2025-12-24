@@ -39,12 +39,6 @@ void main() {
 
     vec3 L = Z * perez;
 
-    float exposure = 0.05;
-    vec3 mapped = vec3(1.0) - min(exp(-L * exposure), 1);
-
-
-    vec3 rgb = pow(mapped, vec3(1.0/2.2));
-
 //    vec3 rgb = L;
 
 
@@ -58,9 +52,14 @@ void main() {
 
     float glow = smoothstep(glowRadius, sunAngularRadius, sunAngle);
 
-    vec3 sunContribution = sunColor * (sunDisc + 0.2 * glow);
+    vec3 linearColor = L + (sunColor * (sunDisc + 0.2 * glow));
 
-    rgb += sunContribution;
+    // Tonemapping (exponential)
+    float exposure = 0.1;
+    vec3 mapped = vec3(1.0) - exp(-linearColor * exposure);
+
+    // Gamma correction
+    vec3 rgb = pow(mapped, vec3(1.0/2.2));
 
     rgb = max(rgb, vec3(0.0));
 
