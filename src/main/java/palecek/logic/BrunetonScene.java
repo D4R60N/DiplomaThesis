@@ -1,7 +1,6 @@
 package palecek.logic;
 
-import org.joml.Vector2f;
-import org.joml.Vector3f;
+import org.joml.*;
 import palecek.Main;
 import palecek.bruneton.BrunetonModel;
 import palecek.core.*;
@@ -93,7 +92,7 @@ public class BrunetonScene implements ILogic {
 
         BrunetonPrecompute brunetonPrecompute = new BrunetonPrecompute();
         System.out.println("BrunetonPrecompute: " + brunetonPrecompute);
-        brunetonPrecompute.precompute(new ComputeShaderManager(), 256, 64, brunetonModel);
+        brunetonPrecompute.precompute(new ComputeShaderManager(), new Vector2i(256, 64), new Vector2i(64, 16), new Vector4i(32, 128, 32, 8), brunetonModel);
     }
 
     @Override

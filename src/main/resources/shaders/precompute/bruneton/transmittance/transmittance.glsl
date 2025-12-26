@@ -1,10 +1,10 @@
 #version 450
 #extension GL_ARB_shading_language_include : require
 uniform ivec2 uTransmittanceTextureSize;
-const int TRANSMITTANCE_TEXTURE_HEIGHT = uTransmittanceTextureSize.y;
-const int TRANSMITTANCE_TEXTURE_WIDTH = uTransmittanceTextureSize.x;
+#define TRANSMITTANCE_TEXTURE_WIDTH  uTransmittanceTextureSize.x
+#define TRANSMITTANCE_TEXTURE_HEIGHT uTransmittanceTextureSize.y
 #include "/definitions.glsl"
-#include "/functions.glsl"
+#include "/transmittance/functions.glsl"
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
 layout(rgba32f, binding = 0) uniform image2D transmittanceImage;
@@ -21,6 +21,7 @@ void main() {
     }
 
     vec2 fragCoord = (vec2(texelCoord) + 0.5) / uTransmittanceTextureSize;
+    fragCoord = vec2(fragCoord.x, 1.0 - fragCoord.y);
 
     vec3 transmittance = ComputeTransmittanceToTopAtmosphereBoundaryTexture(uAtmosphere, fragCoord);
 

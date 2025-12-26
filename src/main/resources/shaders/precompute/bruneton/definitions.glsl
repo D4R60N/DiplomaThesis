@@ -35,12 +35,12 @@
 #define Luminance3 vec3
 #define Illuminance3 vec3
 
-#define TransmittanceTexture sampler2D
-#define AbstractScatteringTexture sampler3D
-#define ReducedScatteringTexture sampler3D
-#define ScatteringTexture sampler3D
-#define ScatteringDensityTexture sampler3D
-#define IrradianceTexture sampler2D
+#define TransmittanceTexture image2D
+#define AbstractScatteringTexture image3D
+#define ReducedScatteringTexture image3D
+#define ScatteringTexture image3D
+#define ScatteringDensityTexture image3D
+#define IrradianceTexture image2D
 
 const Length m = 1.0;
 const Wavelength nm = 1.0;
@@ -69,7 +69,7 @@ const Luminance cd_per_square_meter = cd / m2;
 const Luminance kcd_per_square_meter = kcd / m2;
 
 struct DensityProfileLayer {
-    Length width;
+Length width;
     Number exp_term;
     InverseLength exp_scale;
     InverseLength linear_term;
@@ -81,7 +81,7 @@ struct DensityProfile {
 };
 
 struct AtmosphereParameters {
-    IrradianceSpectrum solar_irradiance;
+IrradianceSpectrum solar_irradiance;
     Angle sun_angular_radius;
     Length bottom_radius;
     Length top_radius;
@@ -96,3 +96,70 @@ struct AtmosphereParameters {
     DimensionlessSpectrum ground_albedo;
     Number mu_s_min;
 };
+
+Number ClampCosine(Number mu) {
+    return clamp(mu, Number(-1.0), Number(1.0));
+}
+
+Length ClampDistance(Length d) {
+    return max(d, 0.0 * m);
+}
+
+Length ClampRadius(AtmosphereParameters atmosphere, Length r) {
+    return clamp(r, atmosphere.bottom_radius, atmosphere.top_radius);
+}
+
+Length SafeSqrt(Area a) {
+    return sqrt(max(a, 0.0 * m2));
+}
+
+Length DistanceToTopAtmosphereBoundary(AtmosphereParameters atmosphere, Length r, Number mu) {
+    Area discriminant = r * r * (mu * mu - 1.0) +
+    atmosphere.top_radius * atmosphere.top_radius;
+    return ClampDistance(-r * mu + SafeSqrt(discriminant));
+}
+
+Length DistanceToBottomAtmosphereBoundary(AtmosphereParameters atmosphere, Length r, Number mu) {
+    Area discriminant = r * r * (mu * mu - 1.0) +
+    atmosphere.bottom_radius * atmosphere.bottom_radius;
+    return ClampDistance(-r * mu - SafeSqrt(discriminant));
+}
+
+bool RayIntersectsGround(AtmosphereParameters atmosphere, Length r, Number mu) {
+    return mu < 0.0 && r * r * (mu * mu - 1.0) +
+    atmosphere.bottom_radius * atmosphere.bottom_radius >= 0.0 * m2;
+}
+
+Number GetLayerDensity(DensityProfileLayer layer, Length altitude) {
+    Number density = layer.exp_term * exp(layer.exp_scale * altitude) +
+    layer.linear_term * altitude + layer.constant_term;
+    return clamp(density, Number(0.0), Number(1.0));
+}
+
+Number GetProfileDensity(DensityProfile profile, Length altitude) {
+    return altitude < profile.layers[0].width ?
+    GetLayerDensity(profile.layers[0], altitude) :
+    GetLayerDensity(profile.layers[1], altitude);
+}
+Number GetTextureCoordFromUnitRange(Number x, int texture_size) {
+    return 0.5 / Number(texture_size) + x * (1.0 - 1.0 / Number(texture_size));
+}
+
+Number GetUnitRangeFromTextureCoord(Number u, int texture_size) {
+    return (u - 0.5 / Number(texture_size)) / (1.0 - 1.0 / Number(texture_size));
+}
+
+vec2 GetTransmittanceTextureUvFromRMu(AtmosphereParameters atmosphere, Length r, Number mu) {
+    Length H = sqrt(atmosphere.top_radius * atmosphere.top_radius -
+    atmosphere.bottom_radius * atmosphere.bottom_radius);
+    Length rho =
+    SafeSqrt(r * r - atmosphere.bottom_radius * atmosphere.bottom_radius);
+
+    Length d = DistanceToTopAtmosphereBoundary(atmosphere, r, mu);
+    Length d_min = atmosphere.top_radius - r;
+    Length d_max = rho + H;
+    Number x_mu = (d - d_min) / (d_max - d_min);
+    Number x_r = rho / H;
+    return vec2(GetTextureCoordFromUnitRange(x_mu, TRANSMITTANCE_TEXTURE_WIDTH),
+    GetTextureCoordFromUnitRange(x_r, TRANSMITTANCE_TEXTURE_HEIGHT));
+}
