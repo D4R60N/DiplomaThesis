@@ -65,15 +65,7 @@ public class HosekWilkieScene implements ILogic {
         terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 //         Skybox
-        List<String> faces = Arrays.asList(
-                "textures/skybox/px.png",   // +X
-                "textures/skybox/nx.png",    // -X
-                "textures/skybox/py.png",     // +Y
-                "textures/skybox/ny.png",  // -Y
-                "textures/skybox/pz.png",   // +Z
-                "textures/skybox/nz.png"     // -Z
-        );
-        Skybox skybox = new Skybox(new SkyboxTexture(faces), objectLoader, 8, 16);
+        Skybox skybox = new Skybox(null, objectLoader, 8, 16);
 
         float T = 2.50f;
         int A = 0;
@@ -90,7 +82,7 @@ public class HosekWilkieScene implements ILogic {
         skyboxRenderer = new SkyboxRenderer(skybox, "hosek-wilkie", List.of(new HosekWilkieSkyboxModule(camera, hosekWilkie)));
 
 //         renderManager init
-        renderManager.init(null, camera, terrainRenderer, skyboxRenderer);
+        renderManager.init(camera, terrainRenderer, skyboxRenderer);
 
         // Light
         float lightIntensity = 1.0f;

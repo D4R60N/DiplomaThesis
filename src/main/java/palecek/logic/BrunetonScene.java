@@ -3,6 +3,7 @@ package palecek.logic;
 import org.joml.*;
 import palecek.Main;
 import palecek.bruneton.BrunetonModel;
+import palecek.bruneton.BrunetonPostprocessModule;
 import palecek.core.*;
 import palecek.core.entity.SceneManager;
 import palecek.core.gui.ImGuiLayer;
@@ -15,6 +16,7 @@ import palecek.core.rendering.SkyboxRenderer;
 import palecek.core.skybox.Skybox;
 import palecek.core.skybox.SkyboxTexture;
 import palecek.core.utils.Constants;
+import palecek.core.utils.ITexture;
 import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
 import palecek.gui.PauseMenu;
@@ -31,7 +33,6 @@ public class BrunetonScene implements ILogic {
     private final SceneManager sceneManager;
     private PlanetGenerator planetGenerator;
     private PlanetRenderer planetRenderer;
-    private SkyboxRenderer skyboxRenderer;
     private BrunetonModel brunetonModel;
     private ImGuiLayer imGuiLayer;
     private boolean showGui;
@@ -59,40 +60,23 @@ public class BrunetonScene implements ILogic {
 
         // Planet
         planetRenderer = new PlanetRenderer();
-        int[] lods = {8, 16};
-        short[] lodDistances = {8, 12};
-        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());
-
-//         Skybox
-        List<String> faces = Arrays.asList(
-                "textures/skybox/px.png",   // +X
-                "textures/skybox/nx.png",    // -X
-                "textures/skybox/py.png",     // +Y
-                "textures/skybox/ny.png",  // -Y
-                "textures/skybox/pz.png",   // +Z
-                "textures/skybox/nz.png"     // -Z
-        );
-        Skybox skybox = new Skybox(new SkyboxTexture(faces), objectLoader, 8, 16);
-
-        int T = 2;
-        int A = 0;
-
         BrunetonModel bruneton = new BrunetonModel();
         brunetonModel = bruneton;
-//        skyboxRenderer = new SkyboxRenderer(skybox, "nishita", List.of(new NishitaSkyboxModule(camera, nishita)));
-//
-//         renderManager init
-        renderManager.init(null, camera, planetRenderer);
+        // renderManager init
+        BrunetonPrecompute brunetonPrecompute = new BrunetonPrecompute();
+        ITexture[] textures = brunetonPrecompute.precompute(new ComputeShaderManager(), new Vector2i(256, 64), new Vector2i(64, 16), new Vector4i(32, 128, 32, 8), brunetonModel);
+        BrunetonPostprocessModule brunetonPostprocessModule = new BrunetonPostprocessModule(brunetonModel, textures);
+        renderManager.init(List.of(brunetonPostprocessModule), "bruneton", camera, planetRenderer);
+
+        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());
+        planetGenerator.createPlanet(0, 0, -1000, 200f, 2f, 0f, new Vector2f(0, 0), 1f, sceneManager, Planet.PlanetType.TEMPERATE);
+
 
         // Light
         float lightIntensity = 1.0f;
         Vector3f lightPosition = new Vector3f(1f, 0f, 1f);
         Vector3f lightColor = new Vector3f(1f, 1f, 1f);
         sceneManager.setDirectionalLight(new DirectionalLight(lightColor, lightPosition, lightIntensity));
-
-        BrunetonPrecompute brunetonPrecompute = new BrunetonPrecompute();
-        System.out.println("BrunetonPrecompute: " + brunetonPrecompute);
-        brunetonPrecompute.precompute(new ComputeShaderManager(), new Vector2i(256, 64), new Vector2i(64, 16), new Vector4i(32, 128, 32, 8), brunetonModel);
     }
 
     @Override
@@ -114,10 +98,10 @@ public class BrunetonScene implements ILogic {
             cameraInc.y = speed;
         }
 //        if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_R.val)) {
-//            nishitaModel.rotateSun(-1);
+//            hosekWilkieModel.rotateSun(-1);
 //        }
 //        if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_F.val)) {
-//            nishitaModel.rotateSun(1);
+//            hosekWilkieModel.rotateSun(1);
 //        }
         if (windowManager.isKeyTyped(GLFWEnum.GLFW_KEY_TAB.val)) {
             if (!showGui) {
@@ -135,6 +119,7 @@ public class BrunetonScene implements ILogic {
         }
     }
 
+
     @Override
     public void update(float interval, MouseInput mouseInput) {
         camera.movePosition(cameraInc.x * Constants.CAMERA_MOVEMENT_SPEED,
@@ -149,6 +134,9 @@ public class BrunetonScene implements ILogic {
 
         for (Planet planet : sceneManager.getPlanets()) {
             planet.incRotationAngle(0.1f);
+        }
+        for (Planet planet : sceneManager.getPlanets()) {
+            planetRenderer.processPlanet(planet);
         }
     }
 

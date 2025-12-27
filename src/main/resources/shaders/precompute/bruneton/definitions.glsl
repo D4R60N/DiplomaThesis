@@ -148,18 +148,3 @@ Number GetTextureCoordFromUnitRange(Number x, int texture_size) {
 Number GetUnitRangeFromTextureCoord(Number u, int texture_size) {
     return (u - 0.5 / Number(texture_size)) / (1.0 - 1.0 / Number(texture_size));
 }
-
-vec2 GetTransmittanceTextureUvFromRMu(AtmosphereParameters atmosphere, Length r, Number mu) {
-    Length H = sqrt(atmosphere.top_radius * atmosphere.top_radius -
-    atmosphere.bottom_radius * atmosphere.bottom_radius);
-    Length rho =
-    SafeSqrt(r * r - atmosphere.bottom_radius * atmosphere.bottom_radius);
-
-    Length d = DistanceToTopAtmosphereBoundary(atmosphere, r, mu);
-    Length d_min = atmosphere.top_radius - r;
-    Length d_max = rho + H;
-    Number x_mu = (d - d_min) / (d_max - d_min);
-    Number x_r = rho / H;
-    return vec2(GetTextureCoordFromUnitRange(x_mu, TRANSMITTANCE_TEXTURE_WIDTH),
-    GetTextureCoordFromUnitRange(x_r, TRANSMITTANCE_TEXTURE_HEIGHT));
-}

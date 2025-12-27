@@ -64,15 +64,7 @@ public class PreethamScene implements ILogic {
         terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 //         Skybox
-        List<String> faces = Arrays.asList(
-                "textures/skybox/px.png",   // +X
-                "textures/skybox/nx.png",    // -X
-                "textures/skybox/py.png",     // +Y
-                "textures/skybox/ny.png",  // -Y
-                "textures/skybox/pz.png",   // +Z
-                "textures/skybox/nz.png"     // -Z
-        );
-        Skybox skybox = new Skybox(new SkyboxTexture(faces), objectLoader, 8, 16);
+        Skybox skybox = new Skybox(null, objectLoader, 8, 16);
 
         float T = 2.0f;
         Vector3f A = new Vector3f(0.1787f*T - 1.4630f,  -0.0193f*T - 0.2592f, -0.0167f*T - 0.2608f);
@@ -101,7 +93,7 @@ public class PreethamScene implements ILogic {
         skyboxRenderer = new SkyboxRenderer(skybox, "preetham", List.of(new PreethamSkyboxModule(camera, preetham)));
 
 //         renderManager init
-        renderManager.init(null, camera, terrainRenderer, skyboxRenderer);
+        renderManager.init(camera, terrainRenderer, skyboxRenderer);
 
         // Light
         float lightIntensity = 1.0f;

@@ -26,7 +26,7 @@ public class MainMenuScene implements ILogic {
         windowManager = Main.getWindowManager();
         logicManager = Main.getLogicManager();
         imGuiLayer = new MainMenu(windowManager.getWindow(), logicManager, mouseInput);
-        renderManager.init(null, camera);
+        renderManager.init(camera);
         mouseInput.redirectMouseToGui(imGuiLayer.getImGuiGlfw());
     }
 

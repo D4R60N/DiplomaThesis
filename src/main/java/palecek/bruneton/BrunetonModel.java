@@ -2,6 +2,7 @@ package palecek.bruneton;
 
 import org.joml.Vector3f;
 import palecek.core.ComputeShaderManager;
+import palecek.core.ShaderManager;
 
 public class BrunetonModel {
     Vector3f solarIrradiance;
@@ -213,8 +214,37 @@ public class BrunetonModel {
         manager.createUniform(uniformName + ".mu_s_min");
     }
 
-    // Helper to avoid repetitive code
+    public void createUniforms(ShaderManager manager, String uniformName) throws Exception {
+        manager.createUniform(uniformName + ".solar_irradiance");
+        manager.createUniform(uniformName + ".sun_angular_radius");
+        manager.createUniform(uniformName + ".bottom_radius");
+        manager.createUniform(uniformName + ".top_radius");
+
+        createDensityUniforms(manager, uniformName + ".rayleigh_density", rayleighDensity.length);
+        manager.createUniform(uniformName + ".rayleigh_scattering");
+
+        createDensityUniforms(manager, uniformName + ".mie_density", mieDensity.length);
+        manager.createUniform(uniformName + ".mie_scattering");
+        manager.createUniform(uniformName + ".mie_extinction");
+        manager.createUniform(uniformName + ".mie_phase_function_g");
+
+        createDensityUniforms(manager, uniformName + ".absorption_density", absorptionDensity.length);
+        manager.createUniform(uniformName + ".absorption_extinction");
+        manager.createUniform(uniformName + ".ground_albedo");
+        manager.createUniform(uniformName + ".mu_s_min");
+    }
+
     private void createDensityUniforms(ComputeShaderManager manager, String baseName, int length) {
+        for (int i = 0; i < length; i++) {
+            manager.createUniform(baseName + ".layers[" + i + "].width");
+            manager.createUniform(baseName + ".layers[" + i + "].exp_term");
+            manager.createUniform(baseName + ".layers[" + i + "].exp_scale");
+            manager.createUniform(baseName + ".layers[" + i + "].linear_term");
+            manager.createUniform(baseName + ".layers[" + i + "].constant_term");
+        }
+    }
+
+    private void createDensityUniforms(ShaderManager manager, String baseName, int length) throws Exception {
         for (int i = 0; i < length; i++) {
             manager.createUniform(baseName + ".layers[" + i + "].width");
             manager.createUniform(baseName + ".layers[" + i + "].exp_term");
@@ -244,7 +274,37 @@ public class BrunetonModel {
         manager.setUniform(uniformName + ".mu_s_min", muSMin);
     }
 
+    public void setUniforms(ShaderManager manager, String uniformName) {
+        manager.setUniform(uniformName + ".solar_irradiance", solarIrradiance);
+        manager.setUniform(uniformName + ".sun_angular_radius", sunAngularRadius);
+        manager.setUniform(uniformName + ".bottom_radius", bottomRadius);
+        manager.setUniform(uniformName + ".top_radius", topRadius);
+
+        setDensityUniforms(manager, uniformName + ".rayleigh_density", rayleighDensity);
+        manager.setUniform(uniformName + ".rayleigh_scattering", rayleighScattering);
+
+        setDensityUniforms(manager, uniformName + ".mie_density", mieDensity);
+        manager.setUniform(uniformName + ".mie_scattering", mieScattering);
+        manager.setUniform(uniformName + ".mie_extinction", mieExtinction);
+        manager.setUniform(uniformName + ".mie_phase_function_g", miePhaseFunctionG);
+
+        setDensityUniforms(manager, uniformName + ".absorption_density", absorptionDensity);
+        manager.setUniform(uniformName + ".absorption_extinction", absorptionExtinction);
+        manager.setUniform(uniformName + ".ground_albedo", groundAlbedo);
+        manager.setUniform(uniformName + ".mu_s_min", muSMin);
+    }
+
     private void setDensityUniforms(ComputeShaderManager manager, String baseName, DensityProfile[] profiles) {
+        for (int i = 0; i < profiles.length; i++) {
+            manager.setUniform(baseName + ".layers[" + i + "].width", profiles[i].width);
+            manager.setUniform(baseName + ".layers[" + i + "].exp_term", profiles[i].expTerm);
+            manager.setUniform(baseName + ".layers[" + i + "].exp_scale", profiles[i].expScale);
+            manager.setUniform(baseName + ".layers[" + i + "].linear_term", profiles[i].linearTerm);
+            manager.setUniform(baseName + ".layers[" + i + "].constant_term", profiles[i].constantTerm);
+        }
+    }
+
+    private void setDensityUniforms(ShaderManager manager, String baseName, DensityProfile[] profiles) {
         for (int i = 0; i < profiles.length; i++) {
             manager.setUniform(baseName + ".layers[" + i + "].width", profiles[i].width);
             manager.setUniform(baseName + ".layers[" + i + "].exp_term", profiles[i].expTerm);
