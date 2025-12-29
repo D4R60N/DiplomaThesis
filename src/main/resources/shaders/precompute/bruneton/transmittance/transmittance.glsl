@@ -20,10 +20,7 @@ void main() {
         return;
     }
 
-    vec2 fragCoord = (vec2(texelCoord) + 0.5) / uTransmittanceTextureSize;
-    fragCoord = vec2(fragCoord.x, 1.0 - fragCoord.y);
-
-    vec3 transmittance = ComputeTransmittanceToTopAtmosphereBoundaryTexture(uAtmosphere, fragCoord);
+    vec3 transmittance = ComputeTransmittanceToTopAtmosphereBoundaryTexture(uAtmosphere, texelCoord);
 
     imageStore(transmittanceImage, texelCoord, vec4(transmittance, 1.0));
 }

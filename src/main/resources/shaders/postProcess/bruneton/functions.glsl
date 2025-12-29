@@ -1,13 +1,32 @@
-IrradianceSpectrum GetIrradiance(AtmosphereParameters atmosphere, IrradianceTexture irradiance_texture, Length r, Number mu_s);
+vec2 GetTransmittanceTextureUvFromRMu(AtmosphereParameters atmosphere, Length r, Number mu) {
+    Length H = sqrt(atmosphere.top_radius * atmosphere.top_radius -
+    atmosphere.bottom_radius * atmosphere.bottom_radius);
+    Length rho =
+    SafeSqrt(r * r - atmosphere.bottom_radius * atmosphere.bottom_radius);
 
-DimensionlessSpectrum GetTransmittanceToTopAtmosphereBoundary(AtmosphereParameters atmosphere, Length r, Number mu) {
+    Length d = DistanceToTopAtmosphereBoundary(atmosphere, r, mu);
+    Length d_min = atmosphere.top_radius - r;
+    Length d_max = rho + H;
+    Number x_mu = (d - d_min) / (d_max - d_min);
+    Number x_r = rho / H;
+    return vec2(GetTextureCoordFromUnitRange(x_mu, TRANSMITTANCE_TEXTURE_WIDTH),
+    GetTextureCoordFromUnitRange(x_r, TRANSMITTANCE_TEXTURE_HEIGHT));
+}
+
+vec2 GetIrradianceTextureUvFromRMuS(AtmosphereParameters atmosphere, Length r, Number mu_s) {
+Number x_r = (r - atmosphere.bottom_radius) /(atmosphere.top_radius - atmosphere.bottom_radius);
+Number x_mu_s = mu_s * 0.5 + 0.5;
+return vec2(GetTextureCoordFromUnitRange(x_mu_s, IRRADIANCE_TEXTURE_WIDTH), GetTextureCoordFromUnitRange(x_r, IRRADIANCE_TEXTURE_HEIGHT));
+}
+
+IrradianceSpectrum GetIrradiance(AtmosphereParameters atmosphere, IrradianceTexture irradiance_texture, Length r, Number mu_s) {
+vec2 uv = GetIrradianceTextureUvFromRMuS(atmosphere, r, mu_s);
+return IrradianceSpectrum(texture(irradiance_texture, uv));
+}
+
+DimensionlessSpectrum GetTransmittanceToTopAtmosphereBoundary(AtmosphereParameters atmosphere, TransmittanceTexture transmittance_texture, Length r, Number mu) {
     vec2 uv = GetTransmittanceTextureUvFromRMu(atmosphere, r, mu);
-
-    ivec2 size = imageSize(transmittanceImage);
-    ivec2 texel = ivec2(uv * vec2(size));
-    vec4 t = imageLoad(transmittanceImage, texel);
-
-    return DimensionlessSpectrum(t);
+    return DimensionlessSpectrum(texture(transmittance_texture, uv));
 }
 
 InverseSolidAngle RayleighPhaseFunction(Number nu) {
@@ -18,6 +37,38 @@ InverseSolidAngle RayleighPhaseFunction(Number nu) {
 InverseSolidAngle MiePhaseFunction(Number g, Number nu) {
     InverseSolidAngle k = 3.0 / (8.0 * PI * sr) * (1.0 - g * g) / (2.0 + g * g);
     return k * (1.0 + nu * nu) / pow(1.0 + g * g - 2.0 * g * nu, 1.5);
+}
+
+DimensionlessSpectrum GetTransmittance(AtmosphereParameters atmosphere, TransmittanceTexture transmittance_texture,
+Length r, Number mu, Length d, bool ray_r_mu_intersects_ground) {
+    Length r_d = ClampRadius(atmosphere, sqrt(d * d + 2.0 * r * mu * d + r * r));
+    Number mu_d = ClampCosine((r * mu + d) / r_d);
+
+    if (ray_r_mu_intersects_ground) {
+        return min(
+        GetTransmittanceToTopAtmosphereBoundary(
+        atmosphere, transmittance_texture, r_d, -mu_d) /
+        GetTransmittanceToTopAtmosphereBoundary(
+        atmosphere, transmittance_texture, r, -mu),
+        DimensionlessSpectrum(1.0));
+    } else {
+        return min(
+        GetTransmittanceToTopAtmosphereBoundary(
+        atmosphere, transmittance_texture, r, mu) /
+        GetTransmittanceToTopAtmosphereBoundary(
+        atmosphere, transmittance_texture, r_d, mu_d),
+        DimensionlessSpectrum(1.0));
+    }
+}
+
+DimensionlessSpectrum GetTransmittanceToSun(AtmosphereParameters atmosphere, TransmittanceTexture transmittance_texture, Length r, Number mu_s) {
+    Number sin_theta_h = atmosphere.bottom_radius / r;
+    Number cos_theta_h = -sqrt(max(1.0 - sin_theta_h * sin_theta_h, 0.0));
+    return GetTransmittanceToTopAtmosphereBoundary(
+    atmosphere, transmittance_texture, r, mu_s) *
+    smoothstep(-sin_theta_h * atmosphere.sun_angular_radius / rad,
+    sin_theta_h * atmosphere.sun_angular_radius / rad,
+    mu_s - cos_theta_h);
 }
 
 vec4 GetScatteringTextureUvwzFromRMuMuSNu(AtmosphereParameters atmosphere, Length r, Number mu, Number mu_s, Number nu, bool ray_r_mu_intersects_ground) {
@@ -76,8 +127,7 @@ out IrradianceSpectrum single_mie_scattering) {
     return scattering;
 }
 
-RadianceSpectrum GetSkyRadiance(AtmosphereParameters atmosphere, TransmittanceTexture transmittance_texture,
-ReducedScatteringTexture scattering_texture, ReducedScatteringTexture single_mie_scattering_texture,
+RadianceSpectrum GetSkyRadiance(AtmosphereParameters atmosphere, TransmittanceTexture transmittance_texture, ReducedScatteringTexture scattering_texture, ReducedScatteringTexture single_mie_scattering_texture,
 Position camera, Direction view_ray, Length shadow_length, Direction sun_direction, out DimensionlessSpectrum transmittance) {
     Length r = length(camera);
     Length rmu = dot(camera, view_ray);
@@ -185,14 +235,14 @@ Position camera, Position point, Length shadow_length, Direction sun_direction, 
 
 IrradianceSpectrum GetSunAndSkyIrradiance(AtmosphereParameters atmosphere, TransmittanceTexture transmittance_texture,
 IrradianceTexture irradiance_texture, Position point, Direction normal, Direction sun_direction, out IrradianceSpectrum sky_irradiance) {
-Length r = length(point);
-Number mu_s = dot(point, sun_direction) / r;
+    Length r = length(point);
+    Number mu_s = dot(point, sun_direction) / r;
 
-sky_irradiance = GetIrradiance(atmosphere, irradiance_texture, r, mu_s) *
-(1.0 + dot(normal, point) / r) * 0.5;
+    sky_irradiance = GetIrradiance(atmosphere, irradiance_texture, r, mu_s) *
+    (1.0 + dot(normal, point) / r) * 0.5;
 
-return atmosphere.solar_irradiance *
-GetTransmittanceToSun(
-atmosphere, transmittance_texture, r, mu_s) *
-max(dot(normal, sun_direction), 0.0);
+    return atmosphere.solar_irradiance *
+    GetTransmittanceToSun(
+    atmosphere, transmittance_texture, r, mu_s) *
+    max(dot(normal, sun_direction), 0.0);
 }

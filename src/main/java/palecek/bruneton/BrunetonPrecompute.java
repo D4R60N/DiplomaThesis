@@ -70,6 +70,11 @@ public class BrunetonPrecompute {
                 "/definitions.glsl",
                 Utils.loadResource("/shaders/precompute/bruneton/definitions.glsl")
         );
+        glNamedStringARB(
+                GL_SHADER_INCLUDE_ARB,
+                "/functions.glsl",
+                Utils.loadResource("/shaders/postProcess/bruneton/functions.glsl")
+        );
 
         //----------------------- Transmittance -----------------------//
 
@@ -226,13 +231,60 @@ public class BrunetonPrecompute {
             computeShaderManager.unbind();
         }
 
-//        TextureExporter.saveHDRTextureToPNG(transmittanceMap, transmittanceSize.x, transmittanceSize.y, "images/bruneton/transmittance_map.png", 1f);
-//        TextureExporter.saveHDRTextureToPNG(directIrradianceMap, irradianceSize.x, irradianceSize.y, "images/bruneton/direct_irradiance_map.png", 1f);
-//        TextureExporter.saveHDRTexture3DToPNG(singleRayleighScatteringMap, width, scatteringSize.y, scatteringSize.z, "images/bruneton/scattering_rayleigh/scattering_map.png", 1f);
-//        TextureExporter.saveHDRTexture3DToPNG(singleMieScatteringMap, width, scatteringSize.y, scatteringSize.z, "images/bruneton/scattering_mie/scattering_map.png", 1f);
-//        TextureExporter.saveHDRTexture3DToPNG(scatteringDensityMap, width, scatteringSize.y, scatteringSize.z, "images/bruneton/scattering_density/scattering_map.png", 1f);
-//        TextureExporter.saveHDRTexture3DToPNG(multipleScatteringMap, width, scatteringSize.y, scatteringSize.z, "images/bruneton/scattering/scattering_map.png", 1f);
-//        TextureExporter.saveHDRTextureToPNG(indirectIrradianceMap, irradianceSize.x, irradianceSize.y, "images/bruneton/indirect_irradiance_map.png", 1f);
+        TextureExporter.saveHDRTextureToPNG(transmittanceMap, transmittanceSize.x, transmittanceSize.y, "images/bruneton/transmittance_map.png", 1f);
+        TextureExporter.saveHDRTextureToPNG(directIrradianceMap, irradianceSize.x, irradianceSize.y, "images/bruneton/direct_irradiance_map.png", 1f);
+        TextureExporter.saveHDRTexture3DToPNG(singleRayleighScatteringMap, width, scatteringSize.y, scatteringSize.z, "images/bruneton/scattering_rayleigh/scattering_map.png", 1f, TextureExporter.SliceDimension.X);
+        TextureExporter.saveHDRTexture3DToPNG(singleMieScatteringMap, width, scatteringSize.y, scatteringSize.z, "images/bruneton/scattering_mie/scattering_map.png", 1f, TextureExporter.SliceDimension.X);
+        TextureExporter.saveHDRTexture3DToPNG(scatteringDensityMap, width, scatteringSize.y, scatteringSize.z, "images/bruneton/scattering_density/scattering_map.png", 1f, TextureExporter.SliceDimension.Z);
+        TextureExporter.saveHDRTexture3DToPNG(multipleScatteringMap, width, scatteringSize.y, scatteringSize.z, "images/bruneton/scattering/scattering_map.png", 1f, TextureExporter.SliceDimension.Z);
+        TextureExporter.saveHDRTextureToPNG(indirectIrradianceMap, irradianceSize.x, irradianceSize.y, "images/bruneton/indirect_irradiance_map.png", 1f);
+
+        RawTextureExporter.saveTexture2DFloat(
+                transmittanceMap,
+                transmittanceSize.x,
+                transmittanceSize.y,
+                "images/bruneton/transmittance.dat"
+        );
+
+        RawTextureExporter.saveTexture3DFloat(
+                singleRayleighScatteringMap,
+                width,
+                scatteringSize.y,
+                scatteringSize.z,
+                "images/bruneton/scattering_rayleigh.dat"
+        );
+
+        RawTextureExporter.saveTexture3DFloat(
+                singleMieScatteringMap,
+                width,
+                scatteringSize.y,
+                scatteringSize.z,
+                "images/bruneton/scattering_mie.dat"
+        );
+
+        RawTextureExporter.saveTexture3DFloat(
+                multipleScatteringMap,
+                width,
+                scatteringSize.y,
+                scatteringSize.z,
+                "images/bruneton/scattering_multiple.dat"
+        );
+
+        RawTextureExporter.saveTexture2DFloat(
+                directIrradianceMap,
+                irradianceSize.x,
+                irradianceSize.y,
+                "images/bruneton/direct_irradiance.dat"
+        );
+
+        RawTextureExporter.saveTexture2DFloat(
+                indirectIrradianceMap,
+                irradianceSize.x,
+                irradianceSize.y,
+                "images/bruneton/indirect_irradiance.dat"
+        );
+
+
         glDeleteTextures(
                 new int[]{
                         singleRayleighScatteringMap.getId(),

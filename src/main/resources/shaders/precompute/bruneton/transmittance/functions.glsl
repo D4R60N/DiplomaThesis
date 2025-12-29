@@ -37,8 +37,10 @@ void GetRMuFromTransmittanceTextureUv(AtmosphereParameters atmosphere, vec2 uv, 
 }
 
 DimensionlessSpectrum ComputeTransmittanceToTopAtmosphereBoundaryTexture(AtmosphereParameters atmosphere, vec2 frag_coord) {
+    const vec2 TRANSMITTANCE_TEXTURE_SIZE = vec2(TRANSMITTANCE_TEXTURE_WIDTH, TRANSMITTANCE_TEXTURE_HEIGHT);
     Length r;
     Number mu;
-    GetRMuFromTransmittanceTextureUv(atmosphere, frag_coord, r, mu);
+    GetRMuFromTransmittanceTextureUv(
+    atmosphere, frag_coord / TRANSMITTANCE_TEXTURE_SIZE, r, mu);
     return ComputeTransmittanceToTopAtmosphereBoundary(atmosphere, r, mu);
 }

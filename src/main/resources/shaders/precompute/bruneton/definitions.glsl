@@ -35,12 +35,12 @@
 #define Luminance3 vec3
 #define Illuminance3 vec3
 
-#define TransmittanceTexture image2D
-#define AbstractScatteringTexture image3D
-#define ReducedScatteringTexture image3D
-#define ScatteringTexture image3D
-#define ScatteringDensityTexture image3D
-#define IrradianceTexture image2D
+#define TransmittanceTexture sampler2D
+#define AbstractScatteringTexture sampler3D
+#define ReducedScatteringTexture sampler3D
+#define ScatteringTexture sampler3D
+#define ScatteringDensityTexture sampler3D
+#define IrradianceTexture sampler2D
 
 const Length m = 1.0;
 const Wavelength nm = 1.0;
@@ -81,7 +81,7 @@ struct DensityProfile {
 };
 
 struct AtmosphereParameters {
-IrradianceSpectrum solar_irradiance;
+    IrradianceSpectrum solar_irradiance;
     Angle sun_angular_radius;
     Length bottom_radius;
     Length top_radius;

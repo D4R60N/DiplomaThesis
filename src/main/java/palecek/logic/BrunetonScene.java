@@ -4,6 +4,7 @@ import org.joml.*;
 import palecek.Main;
 import palecek.bruneton.BrunetonModel;
 import palecek.bruneton.BrunetonPostprocessModule;
+import palecek.bruneton.RawTextureExporter;
 import palecek.core.*;
 import palecek.core.entity.SceneManager;
 import palecek.core.gui.ImGuiLayer;
@@ -15,9 +16,7 @@ import palecek.core.rendering.RenderManager;
 import palecek.core.rendering.SkyboxRenderer;
 import palecek.core.skybox.Skybox;
 import palecek.core.skybox.SkyboxTexture;
-import palecek.core.utils.Constants;
-import palecek.core.utils.ITexture;
-import palecek.core.utils.RenderMode;
+import palecek.core.utils.*;
 import palecek.core.utils.glfw.GLFWEnum;
 import palecek.gui.PauseMenu;
 
@@ -25,6 +24,10 @@ import palecek.bruneton.BrunetonPrecompute;
 
 import java.util.Arrays;
 import java.util.List;
+
+import static org.lwjgl.opengl.GL11.GL_FLOAT;
+import static org.lwjgl.opengl.GL11.GL_RGBA;
+import static org.lwjgl.opengl.GL30C.GL_RGBA32F;
 
 public class BrunetonScene implements ILogic {
     private final RenderManager renderManager;
@@ -64,8 +67,19 @@ public class BrunetonScene implements ILogic {
         brunetonModel = bruneton;
         // renderManager init
         BrunetonPrecompute brunetonPrecompute = new BrunetonPrecompute();
-        ITexture[] textures = brunetonPrecompute.precompute(new ComputeShaderManager(), new Vector2i(256, 64), new Vector2i(64, 16), new Vector4i(32, 128, 32, 8), brunetonModel);
-        BrunetonPostprocessModule brunetonPostprocessModule = new BrunetonPostprocessModule(brunetonModel, textures);
+        Vector2i transmittanceSize = new Vector2i(256, 64);
+        Vector2i irradianceSize = new Vector2i(64, 16);
+        Vector4i scatteringSize = new Vector4i(32, 128, 32, 8);
+        ITexture[] textures = brunetonPrecompute.precompute(new ComputeShaderManager(), transmittanceSize, irradianceSize, scatteringSize, brunetonModel);
+
+        ITexture[] texturesArray = {
+                new Texture(transmittanceSize.x, transmittanceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/transmittance.dat", transmittanceSize.x, transmittanceSize.y, 1, 4)),
+                new Texture(irradianceSize.x, irradianceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/irradiance.dat", irradianceSize.x, irradianceSize.y, 1, 4)),
+                new Texture3D(scatteringSize.x, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/scattering.dat", scatteringSize.x, scatteringSize.y, scatteringSize.z, 4)),
+                textures[3]
+        };
+
+        BrunetonPostprocessModule brunetonPostprocessModule = new BrunetonPostprocessModule(brunetonModel, texturesArray, scatteringSize, transmittanceSize, irradianceSize);
         renderManager.init(List.of(brunetonPostprocessModule), "bruneton", camera, planetRenderer);
 
         planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());
@@ -106,8 +120,7 @@ public class BrunetonScene implements ILogic {
         if (windowManager.isKeyTyped(GLFWEnum.GLFW_KEY_TAB.val)) {
             if (!showGui) {
                 mouseInput.redirectMouseToGui(imGuiLayer.getImGuiGlfw());
-            }
-            else {
+            } else {
                 mouseInput.restoreMouseForApp();
             }
             showGui = !showGui;
@@ -153,7 +166,6 @@ public class BrunetonScene implements ILogic {
         renderManager.cleanup();
         objectLoader.cleanUp();
     }
-
 
 
 }
