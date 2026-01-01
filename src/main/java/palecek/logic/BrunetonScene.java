@@ -50,7 +50,7 @@ public class BrunetonScene implements ILogic {
         renderManager = new RenderManager();
         objectLoader = new ObjectLoader();
         camera = new Camera();
-        cameraInc = new Vector3f(0, 0, 0);
+        cameraInc = new Vector3f(0, 6362.0f, 6362.0f);
         sceneManager = new SceneManager(-90, camera);
     }
 
@@ -128,7 +128,7 @@ public class BrunetonScene implements ILogic {
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_LEFT_SHIFT.val)) {
             speed = 0.1f;
         } else {
-            speed = 0.05f;
+            speed = 0.0005f;
         }
     }
 

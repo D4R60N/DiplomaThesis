@@ -2,7 +2,7 @@
 #extension GL_ARB_shading_language_include : require
 in vec3 view_ray;
 in vec2 fragTexCoord;
-layout(location = 0) out vec4 color;
+out vec4 fragColor;
 
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
@@ -23,18 +23,24 @@ uniform ivec2 uIrradianceTextureSize;
 #define IRRADIANCE_TEXTURE_WIDTH uIrradianceTextureSize.x
 #define IRRADIANCE_TEXTURE_HEIGHT uIrradianceTextureSize.y
 
+const float sunAzimuthAngleRadians = 3.14;
+const float sunZenithAngleRadians = 1.31;
 uniform vec3 camPos;
-uniform float exposure = 10.0;
+uniform float exposure = 1.0;
 uniform vec3 white_point = vec3(1.0, 1.0, 1.0);
-uniform vec3 earth_center = vec3(0.0, -6360.0, 0.0);
-uniform vec3 sun_direction = vec3(0.0, 1.0, 0.0);
+uniform vec3 earth_center = vec3(0.0, -6362.0, 0.0);
+uniform vec3 sun_direction = vec3(
+sin(sunZenithAngleRadians) * cos(sunAzimuthAngleRadians),
+cos(sunZenithAngleRadians), // Y is now the UP component
+sin(sunZenithAngleRadians) * sin(sunAzimuthAngleRadians)
+);
 uniform vec2 sun_size = vec2(0.00465, 0.00465);
 
 #include "/definitions.glsl"
 #include "/functions.glsl"
 
-const vec3 SUN_SPECTRAL_RADIANCE_TO_LUMINANCE = vec3(1);
-const vec3 SKY_SPECTRAL_RADIANCE_TO_LUMINANCE = vec3(1);
+const vec3 SKY_SPECTRAL_RADIANCE_TO_LUMINANCE = vec3(114974.916437,71305.954816,65310.548555);
+const vec3 SUN_SPECTRAL_RADIANCE_TO_LUMINANCE = vec3(98242.786222,69954.398112,66475.012354);
 
 const vec3 kSphereCenter = vec3(0.0, 0.0, 1.0);
 const float kSphereRadius = 1.0;
@@ -89,8 +95,7 @@ float GetSunVisibility(vec3 point, vec3 sun_direction) {
     float p_dot_v = dot(p, sun_direction);
     float p_dot_p = dot(p, p);
     float ray_sphere_center_squared_distance = p_dot_p - p_dot_v * p_dot_v;
-    float discriminant =
-    kSphereRadius * kSphereRadius - ray_sphere_center_squared_distance;
+    float discriminant = kSphereRadius * kSphereRadius - ray_sphere_center_squared_distance;
     if (discriminant >= 0.0) {
         float distance_to_intersection = -p_dot_v - sqrt(discriminant);
         if (distance_to_intersection > 0.0) {
@@ -144,15 +149,13 @@ out float d_in, out float d_out) {
 
 void main() {
     vec3 view_direction = normalize(view_ray);
-    float fragment_angular_size =
-    length(dFdx(view_ray) + dFdy(view_ray)) / length(view_ray);
+    float fragment_angular_size = length(dFdx(view_ray) + dFdy(view_ray)) / length(view_ray);
 
     float shadow_in;
     float shadow_out;
     GetSphereShadowInOut(view_direction, sun_direction, shadow_in, shadow_out);
 
-    float lightshaft_fadein_hack = smoothstep(
-    0.02, 0.04, dot(normalize(camPos - earth_center), sun_direction));
+    float lightshaft_fadein_hack = smoothstep(0.02, 0.04, dot(normalize(camPos - earth_center), sun_direction));
 
     vec3 p = camPos - kSphereCenter;
     float p_dot_v = dot(p, view_direction);
@@ -187,7 +190,7 @@ void main() {
     p_dot_v = dot(p, view_direction);
     p_dot_p = dot(p, p);
     float ray_earth_center_squared_distance = p_dot_p - p_dot_v * p_dot_v;
-    discriminant = earth_center.z * earth_center.z - ray_earth_center_squared_distance;
+    discriminant = uAtmosphere.bottom_radius * uAtmosphere.bottom_radius - ray_earth_center_squared_distance;
 
     float ground_alpha = 0.0;
     vec3 ground_radiance = vec3(0.0);
@@ -205,8 +208,7 @@ void main() {
             sky_irradiance * GetSkyVisibility(point));
 
             float shadow_length =
-            max(0.0, min(shadow_out, distance_to_intersection) - shadow_in) *
-            lightshaft_fadein_hack;
+            max(0.0, min(shadow_out, distance_to_intersection) - shadow_in) * lightshaft_fadein_hack;
             vec3 transmittance;
             vec3 in_scatter = GetSkyRadianceToPoint(camPos - earth_center,
             point - earth_center, shadow_length, sun_direction, transmittance);
@@ -223,7 +225,7 @@ void main() {
     }
     radiance = mix(radiance, ground_radiance, ground_alpha);
     radiance = mix(radiance, sphere_radiance, sphere_alpha);
-    color.rgb =pow(vec3(1.0) - exp(-radiance / white_point * exposure), vec3(1.0 / 2.2));
-    color.a = 1.0;
+    fragColor.rgb =pow(vec3(1.0) - exp(-radiance / white_point * exposure), vec3(1.0 / 2.2));
+    fragColor.a = 1.0;
 }
 

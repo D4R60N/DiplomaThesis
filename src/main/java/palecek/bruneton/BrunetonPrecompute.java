@@ -147,7 +147,7 @@ public class BrunetonPrecompute {
         computeShaderManager.memoryBarrier(GL_ALL_BARRIER_BITS);
         computeShaderManager.unbind();
 
-        for (int order = 2; order < 5; order++) {
+        for (int order = 2; order < 0; order++) {
             //----------------------- Scattering Density -----------------------//
 
             computeShaderManager.createComputeShader(Utils.loadResource("/shaders/precompute/bruneton/scattering_density/scattering_density.glsl"));
