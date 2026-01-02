@@ -1,8 +1,6 @@
 vec2 GetTransmittanceTextureUvFromRMu(AtmosphereParameters atmosphere, Length r, Number mu) {
-    Length H = sqrt(atmosphere.top_radius * atmosphere.top_radius -
-    atmosphere.bottom_radius * atmosphere.bottom_radius);
-    Length rho =
-    SafeSqrt(r * r - atmosphere.bottom_radius * atmosphere.bottom_radius);
+    Length H = sqrt(atmosphere.top_radius * atmosphere.top_radius - atmosphere.bottom_radius * atmosphere.bottom_radius);
+    Length rho = SafeSqrt(r * r - atmosphere.bottom_radius * atmosphere.bottom_radius);
 
     Length d = DistanceToTopAtmosphereBoundary(atmosphere, r, mu);
     Length d_min = atmosphere.top_radius - r;
@@ -15,11 +13,7 @@ vec2 GetTransmittanceTextureUvFromRMu(AtmosphereParameters atmosphere, Length r,
 
 DimensionlessSpectrum GetTransmittanceToTopAtmosphereBoundary(AtmosphereParameters atmosphere, Length r, Number mu) {
     vec2 uv = GetTransmittanceTextureUvFromRMu(atmosphere, r, mu);
-
-    ivec2 size = imageSize(transmittanceImage);
-    ivec2 texel = ivec2(uv * vec2(size));
-    vec4 t = imageLoad(transmittanceImage, texel);
-
+    vec4 t = texture(transmittanceSampler, uv);
     return DimensionlessSpectrum(t);
 }
 

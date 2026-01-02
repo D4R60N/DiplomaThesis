@@ -20,7 +20,7 @@ void main() {
         return;
     }
 
-    vec3 transmittance = ComputeTransmittanceToTopAtmosphereBoundaryTexture(uAtmosphere, texelCoord);
+    vec3 transmittance = ComputeTransmittanceToTopAtmosphereBoundaryTexture(uAtmosphere, vec2(texelCoord) + 0.5);
 
     imageStore(transmittanceImage, texelCoord, vec4(transmittance, 1.0));
 }

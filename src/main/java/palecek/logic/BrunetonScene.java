@@ -25,12 +25,8 @@ import palecek.gui.PauseMenu;
 
 import palecek.bruneton.BrunetonPrecompute;
 
-import java.util.Arrays;
 import java.util.List;
 
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_RGBA;
-import static org.lwjgl.opengl.GL30C.GL_RGBA32F;
 
 public class BrunetonScene implements ILogic {
     private final RenderManager renderManager;
@@ -78,12 +74,12 @@ public class BrunetonScene implements ILogic {
         Vector4i scatteringSize = new Vector4i(32, 128, 32, 8);
         ITexture[] textures = brunetonPrecompute.precompute(new ComputeShaderManager(), transmittanceSize, irradianceSize, scatteringSize, brunetonModel);
 
-        ITexture[] texturesArray = {
-                new Texture(transmittanceSize.x, transmittanceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/transmittance.dat", transmittanceSize.x, transmittanceSize.y, 1, 4)),
-                new Texture(irradianceSize.x, irradianceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/irradiance.dat", irradianceSize.x, irradianceSize.y, 1, 4)),
-                new Texture3D(scatteringSize.x, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/scattering.dat", scatteringSize.x, scatteringSize.y, scatteringSize.z, 4)),
-                textures[3]
-        };
+//        ITexture[] texturesArray = {
+//                new Texture(transmittanceSize.x, transmittanceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/transmittance.dat", transmittanceSize.x, transmittanceSize.y, 1, 4)),
+//                new Texture(irradianceSize.x, irradianceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/irradiance.dat", irradianceSize.x, irradianceSize.y, 1, 4)),
+//                new Texture3D(scatteringSize.x, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/scattering.dat", scatteringSize.x, scatteringSize.y, scatteringSize.z, 4)),
+//                textures[3]
+//        };
 
         // Terrain
         terrainRenderer = new TerrainRenderer();
@@ -92,7 +88,7 @@ public class BrunetonScene implements ILogic {
         terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 
-        BrunetonPostprocessModule brunetonPostprocessModule = new BrunetonPostprocessModule(brunetonModel, texturesArray, scatteringSize, transmittanceSize, irradianceSize);
+        BrunetonPostprocessModule brunetonPostprocessModule = new BrunetonPostprocessModule(brunetonModel, textures, scatteringSize, transmittanceSize, irradianceSize);
         renderManager.init(List.of(brunetonPostprocessModule), "bruneton", camera, terrainRenderer);
 
 //        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());

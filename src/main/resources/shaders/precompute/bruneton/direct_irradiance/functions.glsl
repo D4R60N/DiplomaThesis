@@ -15,11 +15,7 @@ vec2 GetTransmittanceTextureUvFromRMu(AtmosphereParameters atmosphere, Length r,
 
 DimensionlessSpectrum GetTransmittanceToTopAtmosphereBoundary(AtmosphereParameters atmosphere, Length r, Number mu) {
     vec2 uv = GetTransmittanceTextureUvFromRMu(atmosphere, r, mu);
-
-    ivec2 size = imageSize(transmittanceImage);
-    ivec2 texel = ivec2(uv * vec2(size));
-    vec4 t = imageLoad(transmittanceImage, texel);
-
+    vec4 t = texture(transmittanceSampler, uv);
     return DimensionlessSpectrum(t);
 }
 

@@ -6,19 +6,19 @@ uniform ivec4 uScatteringTextureSize;
 uniform int order;
 #define TRANSMITTANCE_TEXTURE_WIDTH  uTransmittanceTextureSize.x
 #define TRANSMITTANCE_TEXTURE_HEIGHT uTransmittanceTextureSize.y
-#define SCATTERING_TEXTURE_MU_SIZE  uScatteringTextureSize.x
-#define SCATTERING_TEXTURE_MU_S_SIZE uScatteringTextureSize.y
+#define SCATTERING_TEXTURE_MU_S_SIZE uScatteringTextureSize.x
+#define SCATTERING_TEXTURE_MU_SIZE  uScatteringTextureSize.y
 #define SCATTERING_TEXTURE_R_SIZE uScatteringTextureSize.z
 #define SCATTERING_TEXTURE_NU_SIZE uScatteringTextureSize.w
 #define IRRADIANCE_TEXTURE_WIDTH uIrradianceTextureSize.x
 #define IRRADIANCE_TEXTURE_HEIGHT uIrradianceTextureSize.y
 
 layout(local_size_x = 8, local_size_y = 8, local_size_z = 8) in;
-layout(rgba32f, binding = 0) uniform image3D singleScatteringRayleighImage;
-layout(rgba32f, binding = 1) uniform image3D singleScatteringMieImage;
-layout(rgba32f, binding = 2) uniform image3D scatteringImage;
+layout(binding = 0) uniform sampler3D singleRayleighScatteringSampler;
+layout(binding = 1) uniform sampler3D singleMieScatteringSampler;
+layout(binding = 2) uniform sampler3D multipleScatteringSampler;
 layout(rgba32f, binding = 3) uniform image2D indirectIrradianceImage;
-layout(rgba32f, binding = 4) uniform image2D transmittanceImage;
+layout(binding = 4) uniform sampler2D  transmittanceSampler;
 
 
 #include "/definitions.glsl"
@@ -35,7 +35,7 @@ void main() {
         return;
     }
 
-    vec3 irradiance = ComputeIndirectIrradianceTexture(uAtmosphere, texelCoord, order);
+    vec3 irradiance = ComputeIndirectIrradianceTexture(uAtmosphere, vec2(texelCoord) + 0.5, order);
 
     imageStore(indirectIrradianceImage, texelCoord, vec4(irradiance, 1));
 }
