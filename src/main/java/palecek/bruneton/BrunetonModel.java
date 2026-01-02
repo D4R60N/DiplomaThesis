@@ -1,5 +1,6 @@
 package palecek.bruneton;
 
+import org.joml.Vector2f;
 import org.joml.Vector3f;
 import palecek.core.ComputeShaderManager;
 import palecek.core.ShaderManager;
@@ -19,6 +20,12 @@ public class BrunetonModel {
     Vector3f absorptionExtinction;
     Vector3f groundAlbedo;
     float muSMin;
+
+    float exposure;
+    Vector3f whitePoint;
+    Vector3f earthCenter;
+    Vector3f sunDirection;
+    Vector2f sunSize;
 
     public BrunetonModel() {
         this.solarIrradiance = new Vector3f(1.474f, 1.8504f, 2.1229f);
@@ -47,6 +54,30 @@ public class BrunetonModel {
                 new DensityProfile(25.0f, 0.0f, 0.0f, 1.0f / 15.0f, -2.0f / 3.0f),
                 new DensityProfile(0.0f, 0.0f, 0.0f, -1.0f / 15.0f, 8.0f / 3.0f)
         };
+        this.exposure = 10.0f;
+        this.whitePoint = new Vector3f(1.0f, 1.0f, 1.0f);
+        this.earthCenter = new Vector3f(0.0f, -bottomRadius, 0.0f);
+        this.sunDirection = calculateSunPosition(0.0f, (float)Math.PI / 2.0f);
+        this.sunSize = new Vector2f((float) Math.tan(sunAngularRadius), (float) Math.cos(sunAngularRadius));
+    }
+
+    public Vector3f calculateSunPosition(float azimuth, float zenith) {
+        float x = (float)(Math.sin(zenith) * Math.sin(azimuth));
+        float y = (float)(Math.cos(zenith));
+        float z = (float)(Math.sin(zenith) * Math.cos(azimuth));
+        return new Vector3f(x, y, z).normalize();
+    }
+
+    public void rotateSun(float incZenith, float incAzimuth) {
+        Vector3f sunPos = sunDirection;
+        float r = sunPos.length();
+        float zenith = (float)Math.acos(sunPos.y / r);
+        float azimuth = (float)Math.atan2(sunPos.x, sunPos.z);
+
+        zenith += incZenith;
+        azimuth += incAzimuth;
+
+        sunDirection = calculateSunPosition(azimuth, zenith);
     }
 
     public BrunetonModel(Vector3f solarIrradiance, float sunAngularRadius, float bottomRadius, float topRadius, DensityProfile[] rayleighDensity, Vector3f rayleighScattering, DensityProfile[] mieDensity, Vector3f mieScattering, Vector3f mieExtinction, float miePhaseFunctionG, DensityProfile[] absorptionDensity, Vector3f absorptionExtinction, Vector3f groundAlbedo, float muSMin) {
@@ -232,6 +263,12 @@ public class BrunetonModel {
         manager.createUniform(uniformName + ".absorption_extinction");
         manager.createUniform(uniformName + ".ground_albedo");
         manager.createUniform(uniformName + ".mu_s_min");
+
+        manager.createUniform("exposure");
+        manager.createUniform("white_point");
+        manager.createUniform("earth_center");
+        manager.createUniform("sun_direction");
+        manager.createUniform("sun_size");
     }
 
     private void createDensityUniforms(ComputeShaderManager manager, String baseName, int length) {
@@ -292,6 +329,12 @@ public class BrunetonModel {
         manager.setUniform(uniformName + ".absorption_extinction", absorptionExtinction);
         manager.setUniform(uniformName + ".ground_albedo", groundAlbedo);
         manager.setUniform(uniformName + ".mu_s_min", muSMin);
+
+        manager.setUniform("exposure", exposure);
+        manager.setUniform("white_point", whitePoint);
+        manager.setUniform("earth_center", earthCenter);
+        manager.setUniform("sun_direction", sunDirection);
+        manager.setUniform("sun_size", sunSize);
     }
 
     private void setDensityUniforms(ComputeShaderManager manager, String baseName, DensityProfile[] profiles) {
