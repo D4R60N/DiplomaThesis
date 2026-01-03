@@ -23,17 +23,13 @@ DimensionlessSpectrum GetTransmittance(AtmosphereParameters atmosphere, Length r
 
     if (ray_r_mu_intersects_ground) {
         return min(
-        GetTransmittanceToTopAtmosphereBoundary(
-        atmosphere, r_d, -mu_d) /
-        GetTransmittanceToTopAtmosphereBoundary(
-        atmosphere, r, -mu),
+        GetTransmittanceToTopAtmosphereBoundary(atmosphere, r_d, -mu_d) /
+        GetTransmittanceToTopAtmosphereBoundary(atmosphere, r, -mu),
         DimensionlessSpectrum(1.0));
     } else {
         return min(
-        GetTransmittanceToTopAtmosphereBoundary(
-        atmosphere, r, mu) /
-        GetTransmittanceToTopAtmosphereBoundary(
-        atmosphere, r_d, mu_d),
+        GetTransmittanceToTopAtmosphereBoundary(atmosphere, r, mu) /
+        GetTransmittanceToTopAtmosphereBoundary(atmosphere, r_d, mu_d),
         DimensionlessSpectrum(1.0));
     }
 }

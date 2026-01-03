@@ -65,8 +65,7 @@ IrradianceSpectrum ComputeIndirectIrradiance(AtmosphereParameters atmosphere, Le
 void GetRMuSFromIrradianceTextureUv(AtmosphereParameters atmosphere, vec2 uv, out Length r, out Number mu_s) {
     Number x_mu_s = GetUnitRangeFromTextureCoord(uv.x, IRRADIANCE_TEXTURE_WIDTH);
     Number x_r = GetUnitRangeFromTextureCoord(uv.y, IRRADIANCE_TEXTURE_HEIGHT);
-    r = atmosphere.bottom_radius +
-    x_r * (atmosphere.top_radius - atmosphere.bottom_radius);
+    r = atmosphere.bottom_radius + x_r * (atmosphere.top_radius - atmosphere.bottom_radius);
     mu_s = ClampCosine(2.0 * x_mu_s - 1.0);
 }
 

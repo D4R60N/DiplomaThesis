@@ -19,7 +19,7 @@ layout(binding = 1) uniform sampler3D singleMieScatteringSampler;
 layout(binding = 2) uniform sampler3D multipleScatteringSampler;
 layout(rgba32f, binding = 3) uniform image2D indirectIrradianceImage;
 layout(binding = 4) uniform sampler2D  transmittanceSampler;
-
+layout(rgba32f, binding = 5) uniform image2D irradianceImage;
 
 #include "/definitions.glsl"
 #include "/single_scattering/functions.glsl"
@@ -37,7 +37,8 @@ void main() {
 
     vec3 irradiance = ComputeIndirectIrradianceTexture(uAtmosphere, vec2(texelCoord) + 0.5, order);
 
-    vec3 previousIrradiance = imageLoad(indirectIrradianceImage, texelCoord).xyz;
+    vec3 previousIrradiance = imageLoad(irradianceImage, texelCoord).xyz;
 
-    imageStore(indirectIrradianceImage, texelCoord, vec4(min(previousIrradiance+irradiance, vec3(1)), 1));
+    imageStore(indirectIrradianceImage, texelCoord, vec4(irradiance, 1));
+    imageStore(irradianceImage, texelCoord, vec4(irradiance + previousIrradiance, 1));
 }
