@@ -20,6 +20,7 @@ layout(rgba32f, binding = 2) uniform image3D scatteringImage;
 #include "/multiple_scattering/functions.glsl"
 
 uniform AtmosphereParameters uAtmosphere;
+uniform int order;
 
 void main() {
     ivec3 texelCoord = ivec3(gl_GlobalInvocationID.xyz);
@@ -31,6 +32,9 @@ void main() {
     }
     float nu;
     vec3 delta_multiple_scattering = ComputeMultipleScatteringTexture(uAtmosphere, transmittanceSampler, scatteringDensitySampler, vec3(texelCoord) + 0.5, nu);
+    vec3 previous_scattering = vec3(0);
+    if (order > 2)
+        previous_scattering = imageLoad(scatteringImage, texelCoord).xyz;
 
-    imageStore(scatteringImage, texelCoord, vec4(delta_multiple_scattering.rgb / RayleighPhaseFunction(nu), 1));
+    imageStore(scatteringImage, texelCoord, vec4((delta_multiple_scattering.rgb / RayleighPhaseFunction(nu)) + previous_scattering, 1));
 }

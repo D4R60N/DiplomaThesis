@@ -33,9 +33,6 @@ uniform vec2 sun_size;
 #include "/definitions.glsl"
 #include "/functions.glsl"
 
-const vec3 SKY_SPECTRAL_RADIANCE_TO_LUMINANCE = vec3(114974.916437,71305.954816,65310.548555);
-const vec3 SUN_SPECTRAL_RADIANCE_TO_LUMINANCE = vec3(98242.786222,69954.398112,66475.012354);
-
 uniform AtmosphereParameters uAtmosphere;
 
 
@@ -51,32 +48,6 @@ vec3 GetSkyRadianceToPoint(vec3 camera, vec3 point, float shadow_length, vec3 su
 }
 vec3 GetSunAndSkyIrradiance(vec3 p, vec3 normal, vec3 sun_direction, out vec3 sky_irradiance) {
     return GetSunAndSkyIrradiance(uAtmosphere, transmittanceTexture, irradianceTexture, p, normal, sun_direction, sky_irradiance);
-}
-
-
-vec3 GetSolarLuminance() {
-    return uAtmosphere.solar_irradiance /
-    (PI * uAtmosphere.sun_angular_radius * uAtmosphere.sun_angular_radius) *
-    SUN_SPECTRAL_RADIANCE_TO_LUMINANCE;
-}
-vec3 GetSkyLuminance(vec3 camera, vec3 view_ray, Length shadow_length, vec3 sun_direction, out DimensionlessSpectrum transmittance) {
-    return GetSkyRadiance(uAtmosphere, transmittanceTexture,
-    scatteringTexture, singleMieScatteringTexture,
-    camera, view_ray, shadow_length, sun_direction, transmittance) *
-    SKY_SPECTRAL_RADIANCE_TO_LUMINANCE;
-}
-vec3 GetSkyLuminanceToPoint(vec3 camera, vec3 point, Length shadow_length, vec3 sun_direction, out DimensionlessSpectrum transmittance) {
-    return GetSkyRadianceToPoint(uAtmosphere, transmittanceTexture,
-    scatteringTexture, singleMieScatteringTexture,
-    camera, point, shadow_length, sun_direction, transmittance) *
-    SKY_SPECTRAL_RADIANCE_TO_LUMINANCE;
-}
-vec3 GetSunAndSkyIlluminance(Position p, vec3 normal, vec3 sun_direction, out vec3 sky_irradiance) {
-    vec3 sun_irradiance = GetSunAndSkyIrradiance(
-    uAtmosphere, transmittanceTexture, irradianceTexture, p, normal,
-    sun_direction, sky_irradiance);
-    sky_irradiance *= SKY_SPECTRAL_RADIANCE_TO_LUMINANCE;
-    return sun_irradiance * SUN_SPECTRAL_RADIANCE_TO_LUMINANCE;
 }
 
 void main() {

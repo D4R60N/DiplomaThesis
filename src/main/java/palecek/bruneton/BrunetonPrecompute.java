@@ -154,7 +154,7 @@ public class BrunetonPrecompute {
         computeShaderManager.memoryBarrier(GL_ALL_BARRIER_BITS);
         computeShaderManager.unbind();
 
-        for (int order = 2; order <= 4; order++) {
+        for (int order = 2; order <= 10; order++) {
             //----------------------- Scattering Density -----------------------//
 
             computeShaderManager.createComputeShader(Utils.loadResource("/shaders/precompute/bruneton/scattering_density/scattering_density.glsl"));
@@ -259,10 +259,12 @@ public class BrunetonPrecompute {
 
             computeShaderManager.createUniform("uScatteringTextureSize");
             computeShaderManager.createUniform("uTransmittanceTextureSize");
+            computeShaderManager.createUniform("order");
             model.createUniforms(computeShaderManager, "uAtmosphere");
 
             computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
             computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
+            computeShaderManager.setUniform("order", order);
             model.setUniforms(computeShaderManager, "uAtmosphere");
 
             transmittanceMap.bind(

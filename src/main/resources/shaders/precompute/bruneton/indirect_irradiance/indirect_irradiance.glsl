@@ -37,5 +37,7 @@ void main() {
 
     vec3 irradiance = ComputeIndirectIrradianceTexture(uAtmosphere, vec2(texelCoord) + 0.5, order);
 
-    imageStore(indirectIrradianceImage, texelCoord, vec4(irradiance, 1));
+    vec3 previousIrradiance = imageLoad(indirectIrradianceImage, texelCoord).xyz;
+
+    imageStore(indirectIrradianceImage, texelCoord, vec4(min(previousIrradiance+irradiance, vec3(1)), 1));
 }
