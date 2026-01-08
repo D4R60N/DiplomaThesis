@@ -66,10 +66,11 @@ void main() {
     if (depth >= 1) {
         radiance = GetSkyRadiance(camera - earth_center, viewDir, shadowLength, sun_direction, transmittance);
 
-        if (dot(viewDir, sun_direction) > sun_size.y) {
-            radiance += transmittance * GetSolarRadiance();
+        float dotViewSun = dot(viewDir, sun_direction);
+        float sunAlpha = smoothstep(sun_size.y - 0.0001, sun_size.y + 0.0001, dotViewSun);
+        if (sunAlpha > 0.0) {
+            radiance += sunAlpha * transmittance * GetSolarRadiance();
         }
-
         radiance = pow(vec3(1.0) - exp(-radiance / white_point * exposure), vec3(1.0 / 2.2));
     } else {
         radiance = sceneColor;

@@ -32,6 +32,6 @@ void main() {
     vec3 mie;
     ComputeSingleScatteringTexture(uAtmosphere, vec3(texelCoord) + 0.5, rayleigh, mie);
 
-    imageStore(scatteringRayleighImage, texelCoord, vec4(rayleigh, mie.r));
+    imageStore(scatteringRayleighImage, texelCoord, vec4(rayleigh, 1));
     imageStore(scatteringMieImage, texelCoord, vec4(mie, 1));
 }

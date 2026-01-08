@@ -6,26 +6,29 @@ import palecek.core.ComputeShaderManager;
 import palecek.core.ShaderManager;
 
 public class BrunetonModel {
-    Vector3f solarIrradiance;
-    float sunAngularRadius;
-    float bottomRadius;
-    float topRadius;
-    DensityProfile[] rayleighDensity;
-    Vector3f rayleighScattering;
-    DensityProfile[] mieDensity;
-    Vector3f mieScattering;
-    Vector3f mieExtinction;
-    float miePhaseFunctionG;
-    DensityProfile[] absorptionDensity;
-    Vector3f absorptionExtinction;
-    Vector3f groundAlbedo;
-    float muSMin;
+    private Vector3f solarIrradiance;
+    private float sunAngularRadius;
+    private float bottomRadius;
+    private float topRadius;
+    private DensityProfile[] rayleighDensity;
+    private Vector3f rayleighScattering;
+    private DensityProfile[] mieDensity;
+    private Vector3f mieScattering;
+    private Vector3f mieExtinction;
+    private float miePhaseFunctionG;
+    private DensityProfile[] absorptionDensity;
+    private Vector3f absorptionExtinction;
+    private Vector3f groundAlbedo;
+    private float muSMin;
 
-    float exposure;
-    Vector3f whitePoint;
-    Vector3f earthCenter;
-    Vector3f sunDirection;
-    Vector2f sunSize;
+    private float exposure;
+    private Vector3f whitePoint;
+    private Vector3f earthCenter;
+    private Vector3f sunDirection;
+    private Vector2f sunSize;
+
+    private float sunZenith;
+    private float sunAzimuth;
 
     public BrunetonModel() {
         this.solarIrradiance = new Vector3f(1.474f, 1.8504f, 2.1229f);
@@ -57,7 +60,9 @@ public class BrunetonModel {
         this.exposure = 10.0f;
         this.whitePoint = new Vector3f(1.0f, 1.0f, 1.0f);
         this.earthCenter = new Vector3f(0.0f, -bottomRadius, 0.0f);
-        this.sunDirection = calculateSunPosition(0.0f, (float)Math.PI / 2.0f);
+        this.sunZenith = (float)Math.PI / 2.0f;
+        this.sunAzimuth = 0.0f;
+        this.sunDirection = calculateSunPosition(sunAzimuth, sunZenith);
         this.sunSize = new Vector2f((float) Math.tan(sunAngularRadius), (float) Math.cos(sunAngularRadius));
     }
 
@@ -69,15 +74,9 @@ public class BrunetonModel {
     }
 
     public void rotateSun(float incZenith, float incAzimuth) {
-        Vector3f sunPos = sunDirection;
-        float r = sunPos.length();
-        float zenith = (float)Math.acos(sunPos.y / r);
-        float azimuth = (float)Math.atan2(sunPos.x, sunPos.z);
-
-        zenith += incZenith;
-        azimuth += incAzimuth;
-
-        sunDirection = calculateSunPosition(azimuth, zenith);
+        sunZenith += incZenith;
+        sunAzimuth += incAzimuth;
+        sunDirection = calculateSunPosition(sunAzimuth, sunZenith);
     }
 
     public BrunetonModel(Vector3f solarIrradiance, float sunAngularRadius, float bottomRadius, float topRadius, DensityProfile[] rayleighDensity, Vector3f rayleighScattering, DensityProfile[] mieDensity, Vector3f mieScattering, Vector3f mieExtinction, float miePhaseFunctionG, DensityProfile[] absorptionDensity, Vector3f absorptionExtinction, Vector3f groundAlbedo, float muSMin) {
