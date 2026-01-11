@@ -31,6 +31,7 @@ public class BrunetonPrecompute {
         Texture irradianceMap = new Texture(irradianceSize.x, irradianceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
         Texture accumulatedIrradianceMap = new Texture(irradianceSize.x, irradianceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
         Texture3D scatteringDensityMap = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+        Texture3D scatteringDensityMapDisplay = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
 
         int groupsX = (int) Math.ceil((double) transmittanceSize.x / 8);
         int groupsY = (int) Math.ceil((double) transmittanceSize.y / 8);
@@ -256,6 +257,7 @@ public class BrunetonPrecompute {
                 );
             }
             glBindImageTexture(5, scatteringDensityMap.getId(), 0, true, 0, GL_WRITE_ONLY, GL_RGBA32F);
+            glBindImageTexture(6, scatteringDensityMapDisplay.getId(), 0, true, 0, GL_WRITE_ONLY, GL_RGBA32F);
 
             computeShaderManager.dispatchCompute(groupsX, groupsY, groupsZ);
 
@@ -272,7 +274,7 @@ public class BrunetonPrecompute {
             );
 
             TextureExporter.saveHDRTexture3DToPNG(
-                    scatteringDensityMap, width, scatteringSize.y, scatteringSize.z, "images/bruneton/scattering_density_order_" + order, 1f, TextureExporter.SliceDimension.Z, 1
+                    scatteringDensityMapDisplay, width, scatteringSize.y, scatteringSize.z, "images/bruneton/scattering_density_order_" + order, 1f, TextureExporter.SliceDimension.Z, 1
             );
 
             //----------------------- Indirect Irradiance -----------------------//

@@ -20,6 +20,7 @@ layout(binding = 2) uniform sampler3D singleMieScatteringSampler;
 layout(binding = 3) uniform sampler3D multipleScatteringSampler;
 layout(binding = 4) uniform sampler2D irradianceSampler;
 layout(rgba32f, binding = 5) uniform image3D scatteringDensityImage;
+layout(rgba32f, binding = 6) uniform image3D scatteringDensityImageDisplay;
 
 #include "/definitions.glsl"
 #include "/single_scattering/functions.glsl"
@@ -38,4 +39,5 @@ void main() {
     vec3 density = ComputeScatteringDensityTexture(uAtmosphere, transmittanceSampler, singleRayleighScatteringSampler, singleMieScatteringSampler, multipleScatteringSampler, irradianceSampler, vec3(texelCoord) + 0.5, order);
 
     imageStore(scatteringDensityImage, texelCoord, vec4(density, 1));
+    imageStore(scatteringDensityImageDisplay, texelCoord, vec4(normalize(density), 1));
 }
