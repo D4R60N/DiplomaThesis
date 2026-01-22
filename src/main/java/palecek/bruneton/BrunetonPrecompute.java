@@ -8,6 +8,7 @@ import palecek.core.utils.ITexture;
 import palecek.core.utils.Texture;
 import palecek.core.utils.Texture3D;
 import palecek.core.utils.TextureExporter;
+import palecek.utils.RawTextureExporter;
 
 import static org.lwjgl.opengl.ARBShadingLanguageInclude.GL_SHADER_INCLUDE_ARB;
 import static org.lwjgl.opengl.ARBShadingLanguageInclude.glNamedStringARB;

@@ -1,9 +1,13 @@
 package palecek.logic;
 
-import org.joml.*;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
+import org.joml.Vector3f;
+import org.joml.Vector4i;
 import palecek.Main;
 import palecek.bruneton.BrunetonModel;
 import palecek.bruneton.BrunetonPostprocessModule;
+import palecek.bruneton.BrunetonPrecompute;
 import palecek.core.*;
 import palecek.core.entity.SceneManager;
 import palecek.core.gui.ImGuiLayer;
@@ -14,23 +18,26 @@ import palecek.core.rendering.RenderManager;
 import palecek.core.rendering.TerrainRenderer;
 import palecek.core.terrain.Terrain;
 import palecek.core.terrain.TerrainGenerator;
-import palecek.core.utils.*;
+import palecek.core.utils.Constants;
+import palecek.core.utils.ITexture;
+import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
 import palecek.gui.PauseMenu;
-
-import palecek.bruneton.BrunetonPrecompute;
+import palecek.hillaire.HillarieModel;
+import palecek.hillaire.HillariePostprocessModule;
+import palecek.hillaire.HillariePrecompute;
 
 import java.util.List;
 
 
-public class BrunetonScene implements ILogic {
+public class HillaireScene implements ILogic {
     private final RenderManager renderManager;
     private final ObjectLoader objectLoader;
     private WindowManager windowManager;
     private final SceneManager sceneManager;
     private PlanetGenerator planetGenerator;
     private PlanetRenderer planetRenderer;
-    private BrunetonModel brunetonModel;
+    private HillarieModel hillarieModel;
     private ImGuiLayer imGuiLayer;
     private boolean showGui;
     private TerrainRenderer terrainRenderer;
@@ -42,7 +49,7 @@ public class BrunetonScene implements ILogic {
     private Camera camera;
     Vector3f cameraInc;
 
-    public BrunetonScene() {
+    public HillaireScene() {
         renderManager = new RenderManager();
         objectLoader = new ObjectLoader();
         camera = new Camera();
@@ -60,14 +67,13 @@ public class BrunetonScene implements ILogic {
 
         // Planet
 //        planetRenderer = new PlanetRenderer();
-        BrunetonModel bruneton = new BrunetonModel();
-        brunetonModel = bruneton;
+        hillarieModel = new HillarieModel();
         // renderManager init
-        BrunetonPrecompute brunetonPrecompute = new BrunetonPrecompute();
+        HillariePrecompute hillariePrecompute = new HillariePrecompute();
         Vector2i transmittanceSize = new Vector2i(256, 64);
         Vector2i irradianceSize = new Vector2i(64, 16);
         Vector4i scatteringSize = new Vector4i(32, 128, 32, 8);
-        ITexture[] textures = brunetonPrecompute.precompute(new ComputeShaderManager(), transmittanceSize, irradianceSize, scatteringSize, brunetonModel);
+        ITexture[] textures = hillariePrecompute.precompute(new ComputeShaderManager(), transmittanceSize, irradianceSize, scatteringSize, hillarieModel);
 
 //        ITexture[] texturesArray = {
 //                new Texture(transmittanceSize.x, transmittanceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/transmittance.dat", transmittanceSize.x, transmittanceSize.y, 1, 4)),
@@ -83,8 +89,8 @@ public class BrunetonScene implements ILogic {
         terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 
-        BrunetonPostprocessModule brunetonPostprocessModule = new BrunetonPostprocessModule(brunetonModel, textures, scatteringSize, transmittanceSize, irradianceSize);
-        renderManager.init(List.of(brunetonPostprocessModule), "bruneton", camera, terrainRenderer);
+        HillariePostprocessModule hillariePostprocessModule = new HillariePostprocessModule(hillarieModel, textures, scatteringSize, transmittanceSize, irradianceSize);
+        renderManager.init(List.of(hillariePostprocessModule), "hillaire", camera, terrainRenderer);
 
 //        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());
 //        planetGenerator.createPlanet(0, 0, -1000, 200f, 2f, 0f, new Vector2f(0, 0), 1f, sceneManager, Planet.PlanetType.TEMPERATE);
@@ -116,10 +122,10 @@ public class BrunetonScene implements ILogic {
             cameraInc.y = speed;
         }
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_R.val)) {
-            brunetonModel.rotateSun(-.01f, 0);
+            hillarieModel.rotateSun(-.01f, 0);
         }
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_F.val)) {
-            brunetonModel.rotateSun(.01f, 0);
+            hillarieModel.rotateSun(.01f, 0);
         }
         if (windowManager.isKeyTyped(GLFWEnum.GLFW_KEY_TAB.val)) {
             if (!showGui) {

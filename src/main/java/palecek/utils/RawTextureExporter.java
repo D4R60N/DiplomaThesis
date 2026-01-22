@@ -1,4 +1,4 @@
-package palecek.bruneton;
+package palecek.utils;
 
 import org.lwjgl.BufferUtils;
 import palecek.core.utils.Texture;

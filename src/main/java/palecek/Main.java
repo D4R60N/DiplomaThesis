@@ -15,8 +15,9 @@ public class Main {
             List.of(
 //                    new MainMenuScene(),
 //                    new PreethamScene(),
-//                    new HosekWilkieScene(),
-                    new BrunetonScene()
+//                    new HosekWilkieScene()
+//                    new BrunetonScene()
+                    new HillaireScene()
             )
     );
 

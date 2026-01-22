@@ -57,6 +57,7 @@ public class BrunetonModel {
                 new DensityProfile(25.0f, 0.0f, 0.0f, 1.0f / 15.0f, -2.0f / 3.0f),
                 new DensityProfile(0.0f, 0.0f, 0.0f, -1.0f / 15.0f, 8.0f / 3.0f)
         };
+
         this.exposure = 10.0f;
         this.whitePoint = new Vector3f(1.0f, 1.0f, 1.0f);
         this.earthCenter = new Vector3f(0.0f, -bottomRadius, 0.0f);
