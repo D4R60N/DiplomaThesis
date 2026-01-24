@@ -11,10 +11,9 @@ public class HillariePostprocessModule implements IShaderModule {
     private final HillarieModel model;
     private Texture transmittanceTexture, irradianceTexture;
     private Texture3D scatteringTexture, singleMieScatteringTexture;
-    private final Vector4i scatteringSize;
-    private final Vector2i transmittanceSize, irradianceSize;
+    private final Vector2i transmittanceSize, scatteringSize;
 
-    public HillariePostprocessModule(HillarieModel model, ITexture[] textures, Vector4i scatteringSize, Vector2i transmittanceSize, Vector2i irradianceSize) {
+    public HillariePostprocessModule(HillarieModel model, ITexture[] textures, Vector2i scatteringSize, Vector2i transmittanceSize) {
         this.model = model;
         this.transmittanceTexture = (Texture) textures[0];
         this.irradianceTexture = (Texture) textures[1];
@@ -22,7 +21,6 @@ public class HillariePostprocessModule implements IShaderModule {
         this.singleMieScatteringTexture = (Texture3D) textures[3];
         this.scatteringSize = scatteringSize;
         this.transmittanceSize = transmittanceSize;
-        this.irradianceSize = irradianceSize;
     }
 
     @Override
@@ -55,7 +53,6 @@ public class HillariePostprocessModule implements IShaderModule {
 
         shaderManager.setUniform("uScatteringTextureSize", scatteringSize);
         shaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
-        shaderManager.setUniform("uIrradianceTextureSize", irradianceSize);
 
     }
 

@@ -1,9 +1,6 @@
 package palecek.logic;
 
-import org.joml.Vector2f;
-import org.joml.Vector2i;
-import org.joml.Vector3f;
-import org.joml.Vector4i;
+import org.joml.*;
 import palecek.Main;
 import palecek.bruneton.BrunetonModel;
 import palecek.bruneton.BrunetonPostprocessModule;
@@ -68,12 +65,10 @@ public class HillaireScene implements ILogic {
         // Planet
 //        planetRenderer = new PlanetRenderer();
         hillarieModel = new HillarieModel();
-        // renderManager init
-        HillariePrecompute hillariePrecompute = new HillariePrecompute();
         Vector2i transmittanceSize = new Vector2i(256, 64);
-        Vector2i irradianceSize = new Vector2i(64, 16);
-        Vector4i scatteringSize = new Vector4i(32, 128, 32, 8);
-        ITexture[] textures = hillariePrecompute.precompute(new ComputeShaderManager(), transmittanceSize, irradianceSize, scatteringSize, hillarieModel);
+        Vector2i scatteringSize = new Vector2i(32, 32);
+        HillariePrecompute hillariePrecompute = new HillariePrecompute(transmittanceSize, scatteringSize);
+        ITexture[] textures = hillariePrecompute.precompute(new ComputeShaderManager(), hillarieModel);
 
 //        ITexture[] texturesArray = {
 //                new Texture(transmittanceSize.x, transmittanceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/transmittance.dat", transmittanceSize.x, transmittanceSize.y, 1, 4)),
@@ -89,7 +84,7 @@ public class HillaireScene implements ILogic {
         terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 
-        HillariePostprocessModule hillariePostprocessModule = new HillariePostprocessModule(hillarieModel, textures, scatteringSize, transmittanceSize, irradianceSize);
+        HillariePostprocessModule hillariePostprocessModule = new HillariePostprocessModule(hillarieModel, textures, scatteringSize, transmittanceSize);
         renderManager.init(List.of(hillariePostprocessModule), "hillaire", camera, terrainRenderer);
 
 //        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());

@@ -6,8 +6,6 @@ layout(rgba32f, binding = 0) uniform writeonly image2D imgTransmittance;
 uniform sampler2D u_TransmittanceLutTexture;
 
 uniform ivec2 uTransmittanceTextureSize;
-#define TRANSMITTANCE_TEXTURE_WIDTH  uTransmittanceTextureSize.x
-#define TRANSMITTANCE_TEXTURE_HEIGHT uTransmittanceTextureSize.y
 uniform mat4 gSkyInvViewProjMat;
 uniform vec3 sunDirection;
 uniform vec2 RayMarchMinMaxSPP;
