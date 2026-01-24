@@ -22,14 +22,14 @@ void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);
     uint rayIndex = gl_LocalInvocationID.z;
 
-    if (texelCoord.x >= int(uTransmittanceTextureSize.x) ||
-    texelCoord.y >= int(uTransmittanceTextureSize.y)) {
+    if (texelCoord.x >= int(uScatteringTextureSize.x) ||
+    texelCoord.y >= int(uScatteringTextureSize.y)) {
         return;
     }
     AtmosphereParameters Atmosphere = uAtmosphere;
 
     vec2 pixPos = vec2(texelCoord) + 0.5;
-    vec2 uv = pixPos / uScatteringTextureSize;
+    vec2 uv = pixPos / vec2(uScatteringTextureSize);
 
 
     uv = vec2(fromSubUvsToUnit(uv.x, MultiScatteringLUTRes), fromSubUvsToUnit(uv.y, MultiScatteringLUTRes));

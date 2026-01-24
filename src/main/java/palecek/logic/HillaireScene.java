@@ -67,7 +67,8 @@ public class HillaireScene implements ILogic {
         hillarieModel = new HillarieModel();
         Vector2i transmittanceSize = new Vector2i(256, 64);
         Vector2i scatteringSize = new Vector2i(32, 32);
-        HillariePrecompute hillariePrecompute = new HillariePrecompute(transmittanceSize, scatteringSize);
+        Vector2i skyViewSize = new Vector2i(192, 108);
+        HillariePrecompute hillariePrecompute = new HillariePrecompute(transmittanceSize, scatteringSize, skyViewSize);
         ITexture[] textures = hillariePrecompute.precompute(new ComputeShaderManager(), hillarieModel);
 
 //        ITexture[] texturesArray = {
