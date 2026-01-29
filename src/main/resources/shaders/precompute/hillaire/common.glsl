@@ -1,12 +1,9 @@
 #define PI 3.1415926535897932384626433832795f
-const bool RENDER_SUN_DISK = true;
-vec3 sun_direction = vec3(0.0f, 1.0f, 0.0f); // nastavit z uniformu
 #define NONLINEARSKYVIEWLUT 1
 #define ILLUMINANCE_IS_ONE 1
 #define PLANET_RADIUS_OFFSET 0.01f
-#define MULTISCATAPPROX_ENABLED 0
 #define SHADOWMAP_ENABLED 0
-const float MultiScatteringLUTRes = 32.0;
+const float MultiScatteringLUTRes = 32.0; // nastavit z uniformu
 
 struct AtmosphereParameters {
     float BottomRadius;
@@ -119,7 +116,7 @@ void UvToLutTransmittanceParams(AtmosphereParameters Atmosphere, out float viewH
 void UvToSkyViewLutParams(AtmosphereParameters Atmosphere, out float viewZenithCosAngle, out float lightViewCosAngle, in float viewHeight, in vec2 uv)
 {
     // Constrain uvs to valid sub texel range (avoid zenith derivative issue making LUT usage visible)
-    uv = vec2(fromSubUvsToUnit(uv.x, 192.0f), fromSubUvsToUnit(uv.y, 108.0f));
+    uv = vec2(fromSubUvsToUnit(uv.x, uSkyViewTextureSize.x), fromSubUvsToUnit(uv.y, uSkyViewTextureSize.y));
 
     float Vhorizon = sqrt(viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius);
     float CosBeta = Vhorizon / viewHeight;				// GroundToHorizonCos
@@ -182,7 +179,7 @@ void SkyViewLutParamsToUv(AtmosphereParameters Atmosphere, in bool IntersectGrou
         uv.x = coord;
     }
     
-    uv = vec2(fromUnitToSubUvs(uv.x, 192.0f), fromUnitToSubUvs(uv.y, 108.0f));
+    uv = vec2(fromUnitToSubUvs(uv.x, uSkyViewTextureSize.x), fromUnitToSubUvs(uv.y, uSkyViewTextureSize.y));
 }
 
 float getAlbedo(float scattering, float extinction)
@@ -347,7 +344,7 @@ bool MoveToTopAtmosphere(inout vec3 WorldPos, in vec3 WorldDir, in float Atmosph
 vec3 GetSunLuminance(vec3 WorldPos, vec3 WorldDir, float PlanetRadius)
 {
     if (RENDER_SUN_DISK) {
-        if (dot(WorldDir, sun_direction) > cos(0.5*0.505*3.14159 / 180.0))
+        if (dot(WorldDir, sunDirection) > cos(0.5*0.505*3.14159 / 180.0))
         {
             float t = raySphereIntersectNearest(WorldPos, WorldDir, vec3(0.0f, 0.0f, 0.0f), PlanetRadius);
             if (t < 0.0f)
@@ -360,25 +357,31 @@ vec3 GetSunLuminance(vec3 WorldPos, vec3 WorldDir, float PlanetRadius)
     return vec3(0.0f);
 }
 
-//vec3 GetMultipleScattering(AtmosphereParameters Atmosphere, vec3 scattering, vec3 extinction, vec3 worlPos, float viewZenithCosAngle)
-//{
-//    vec2 uv = saturate(vec2(viewZenithCosAngle*0.5f + 0.5f, (length(worlPos) - Atmosphere.BottomRadius) / (Atmosphere.TopRadius - Atmosphere.BottomRadius)));
-//    uv = vec2(fromUnitToSubUvs(uv.x, MultiScatteringLUTRes), fromUnitToSubUvs(uv.y, MultiScatteringLUTRes));
-//
-//    vec3 multiScatteredLuminance = MultiScatTexture.SampleLevel(samplerLinearsaturate, uv, 0).rgb;
-//    return multiScatteredLuminance;
-//}
+vec3 GetMultipleScattering(AtmosphereParameters Atmosphere, vec3 scattering, vec3 extinction, vec3 worlPos, float viewZenithCosAngle)
+{
+    vec2 uv = saturate(vec2(viewZenithCosAngle*0.5f + 0.5f, (length(worlPos) - Atmosphere.BottomRadius) / (Atmosphere.TopRadius - Atmosphere.BottomRadius)));
+    uv = vec2(fromUnitToSubUvs(uv.x, MultiScatteringLUTRes), fromUnitToSubUvs(uv.y, MultiScatteringLUTRes));
+
+    return textureLod(multiScatteringTexture, uv, 0.0).rgb;
+}
 
 //float getShadow(in AtmosphereParameters Atmosphere, vec3 P)
 //{
-//    vec4 shadowUv = mul(gShadowmapViewProjMat, vec4(P + vec3(0.0, 0.0, -Atmosphere.BottomRadius), 1.0));
-//    shadowUv.x = shadowUv.x*0.5 + 0.5;
-//    shadowUv.y = -shadowUv.y*0.5 + 0.5;
+//    vec4 worldPosForShadow = vec4(P + vec3(0.0, 0.0, -Atmosphere.BottomRadius), 1.0);
+//
+//    vec4 shadowUv = shadowmapViewProjMat * worldPosForShadow;
+//
+//    shadowUv.xyz /= shadowUv.w;
+//
+//    shadowUv.x = shadowUv.x * 0.5 + 0.5;
+//    shadowUv.y = shadowUv.y * 0.5 + 0.5;
+//    shadowUv.z = shadowUv.z * 0.5 + 0.5;
+//
 //    if (all(greaterThanEqual(shadowUv.xyz, vec3(0.0))) && all(lessThan(shadowUv.xyz, vec3(1.0))))
 //    {
-//        return ShadowmapTexture.SampleCmpLevelZero(samplerShadow, shadowUv.xy, shadowUv.z);
+//        return texture(u_ShadowmapTexture, shadowUv.xyz);
 //    }
-//    return 1.0f;
+//    return 1.0;
 //}
 
 struct SingleScatteringResult
@@ -438,10 +441,10 @@ in bool MieRayPhase, in float tMaxMax, vec2 resolution)
         ClipSpace.z = DepthBufferValue;
         if (ClipSpace.z < 1.0f)
         {
-            vec4 DepthBufferWorldPos = gSkyInvViewProjMat * vec4(ClipSpace, 1.0);
+            vec4 DepthBufferWorldPos = invViewProj * vec4(ClipSpace, 1.0);
             DepthBufferWorldPos /= DepthBufferWorldPos.w;
 
-            float tDepth = length(DepthBufferWorldPos.xyz - (WorldPos + vec3(0.0, 0.0, -Atmosphere.BottomRadius))); // apply earth offset to go back to origin as top of earth mode. 
+            float tDepth = length(DepthBufferWorldPos.xyz - (WorldPos + vec3(0.0,  -Atmosphere.BottomRadius, 0.0)));
             if (tDepth < tMax)
             {
                 tMax = tDepth;
@@ -471,11 +474,11 @@ in bool MieRayPhase, in float tMaxMax, vec2 resolution)
     float MiePhaseValue = hgPhase(Atmosphere.MiePhaseG, -cosTheta);
     float RayleighPhaseValue = RayleighPhase(cosTheta);
 
-    vec3 globalL = gSunIlluminance;
+    vec3 globalL = sunIlluminance;
 
     vec3 L = vec3(0.0f);
     vec3 throughput = vec3(1.0f);
-    vec3 OpticalDepth = vec3(1.0f);
+    vec3 OpticalDepth = vec3(0.0f);
     float t = 0.0f;
     float tPrev = 0.0;
     const float SampleSegmentT = 0.3f;
@@ -517,7 +520,7 @@ in bool MieRayPhase, in float tMaxMax, vec2 resolution)
         float SunZenithCosAngle = dot(SunDir, UpVector);
         vec2 uv;
         LutTransmittanceParamsToUv(Atmosphere, pHeight, SunZenithCosAngle, uv);
-        vec3 TransmittanceToSun = textureLod(u_TransmittanceLutTexture, uv, 0.0).rgb;
+        vec3 TransmittanceToSun = textureLod(transmittanceTexture, uv, 0.0).rgb;
 
         vec3 PhaseTimesScattering;
         if (MieRayPhase)
@@ -569,7 +572,7 @@ in bool MieRayPhase, in float tMaxMax, vec2 resolution)
         float SunZenithCosAngle = dot(SunDir, UpVector);
         vec2 uv;
         LutTransmittanceParamsToUv(Atmosphere, pHeight, SunZenithCosAngle, uv);
-        vec3 TransmittanceToSun = textureLod(u_TransmittanceLutTexture, uv, 0.0).rgb;
+        vec3 TransmittanceToSun = textureLod(transmittanceTexture, uv, 0.0).rgb;
 
         const float NdotL = saturate(dot(normalize(UpVector), normalize(SunDir)));
         L += globalL * TransmittanceToSun * throughput * NdotL * Atmosphere.GroundAlbedo / PI;

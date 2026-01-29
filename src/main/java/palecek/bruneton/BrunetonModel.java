@@ -329,12 +329,6 @@ public class BrunetonModel {
         manager.setUniform(uniformName + ".absorption_extinction", absorptionExtinction);
         manager.setUniform(uniformName + ".ground_albedo", groundAlbedo);
         manager.setUniform(uniformName + ".mu_s_min", muSMin);
-
-        manager.setUniform("exposure", exposure);
-        manager.setUniform("white_point", whitePoint);
-        manager.setUniform("earth_center", earthCenter);
-        manager.setUniform("sun_direction", sunDirection);
-        manager.setUniform("sun_size", sunSize);
     }
 
     private void setDensityUniforms(ComputeShaderManager manager, String baseName, DensityProfile[] profiles) {
@@ -355,5 +349,25 @@ public class BrunetonModel {
             manager.setUniform(baseName + ".layers[" + i + "].linear_term", profiles[i].linearTerm);
             manager.setUniform(baseName + ".layers[" + i + "].constant_term", profiles[i].constantTerm);
         }
+    }
+
+    public float getExposure() {
+        return exposure;
+    }
+
+    public Vector3f getWhitePoint() {
+        return whitePoint;
+    }
+
+    public Vector3f getEarthCenter() {
+        return earthCenter;
+    }
+
+    public Vector3f getSunDirection() {
+        return sunDirection;
+    }
+
+    public Vector2f getSunSize() {
+        return sunSize;
     }
 }

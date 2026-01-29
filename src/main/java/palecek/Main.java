@@ -16,7 +16,7 @@ public class Main {
 //                    new MainMenuScene(),
 //                    new PreethamScene(),
 //                    new HosekWilkieScene()
-//                    new BrunetonScene()
+//                    new BrunetonScene() todo fix compute shader layout
                     new HillaireScene()
             )
     );

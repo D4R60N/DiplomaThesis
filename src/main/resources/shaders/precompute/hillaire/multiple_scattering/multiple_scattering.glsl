@@ -3,20 +3,26 @@
 layout(local_size_x = 1, local_size_y = 1, local_size_z = 64) in;
 
 layout(rgba32f, binding = 0) uniform writeonly image2D imgMultipleScattering;
-uniform sampler2D u_TransmittanceLutTexture;
+uniform sampler2D transmittanceTexture;
+uniform sampler2D multiScatteringTexture;
 
+
+uniform ivec2 uSkyViewTextureSize;
 uniform ivec2 uScatteringTextureSize;
 uniform ivec2 uTransmittanceTextureSize;
-uniform mat4 gSkyInvViewProjMat;
-uniform vec3 sunDirection = vec3(0.0, 1.0, 0.0);
+uniform mat4 invViewProj;
+uniform vec3 sunDirection;
 uniform vec2 RayMarchMinMaxSPP;
-uniform vec3 gSunIlluminance;
+uniform vec3 sunIlluminance;
 uniform float MultipleScatteringFactor = 1.0;
 
 shared vec3 MultiScatAs1SharedMem[64];
 shared vec3 LSharedMem[64];
+#define MULTISCATAPPROX_ENABLED 0
+const bool RENDER_SUN_DISK = false;
 #include "/common.glsl"
 uniform AtmosphereParameters uAtmosphere;
+
 
 void main() {
     ivec2 texelCoord = ivec2(gl_GlobalInvocationID.xy);

@@ -7,77 +7,105 @@ out vec4 fragColor;
 uniform sampler2D textureSampler;
 uniform sampler2D depthSampler;
 uniform sampler2D transmittanceTexture;
-uniform sampler2D irradianceTexture;
-uniform sampler3D scatteringTexture;
-uniform sampler3D singleMieScatteringTexture;
+uniform sampler2D multiScatteringTexture;
+uniform sampler2D skyViewTexture;
+uniform sampler3D aerialPerspectiveTexture;
 
-uniform ivec4 uScatteringTextureSize;
+uniform ivec2 uScatteringTextureSize;
 uniform ivec2 uTransmittanceTextureSize;
-uniform ivec2 uIrradianceTextureSize;
-#define TRANSMITTANCE_TEXTURE_WIDTH  uTransmittanceTextureSize.x
-#define TRANSMITTANCE_TEXTURE_HEIGHT uTransmittanceTextureSize.y
-#define SCATTERING_TEXTURE_MU_SIZE  uScatteringTextureSize.x
-#define SCATTERING_TEXTURE_MU_S_SIZE uScatteringTextureSize.y
-#define SCATTERING_TEXTURE_R_SIZE uScatteringTextureSize.z
-#define SCATTERING_TEXTURE_NU_SIZE uScatteringTextureSize.w
-#define IRRADIANCE_TEXTURE_WIDTH uIrradianceTextureSize.x
-#define IRRADIANCE_TEXTURE_HEIGHT uIrradianceTextureSize.y
+uniform ivec2 uSkyViewTextureSize;
+uniform ivec3 uAerialPerspectiveTextureSize;
 
 uniform vec3 camPos;
 uniform float exposure;
-uniform vec3 white_point;
-uniform vec3 earth_center;
-uniform vec3 sun_direction;
-uniform vec2 sun_size;
+uniform vec3 sunDirection;
+uniform vec3 sunIlluminance;
 
-#include "/definitions.glsl"
-#include "/functions.glsl"
+uniform mat4 viewMatInv;
+uniform mat4 projMatInv;
+uniform mat4 invViewProj;
+uniform ivec2 resolution;
+
+uniform vec3 RayMarchMinMaxSPP;
+
+const bool RENDER_SUN_DISK = false;
+#include "/common.glsl"
+#define AP_SLICE_COUNT uAerialPerspectiveTextureSize.z
+#define AP_KM_PER_SLICE 4.0
 
 uniform AtmosphereParameters uAtmosphere;
 
+float getDistance(float depth, vec2 uv) {
+    vec4 ndc = vec4(uv * 2.0 - 1.0, depth * 2.0 - 1.0, 1.0);
+    vec4 posWorld = invViewProj * ndc;
+    posWorld /= posWorld.w;
+    return length(posWorld.xyz - camPos);
+}
 
-vec3 GetSolarRadiance() {
-    return uAtmosphere.solar_irradiance /
-    (PI * uAtmosphere.sun_angular_radius * uAtmosphere.sun_angular_radius);
-}
-vec3 GetSkyRadiance(vec3 camera, vec3 view_ray, float shadow_length, vec3 sun_direction, out vec3 transmittance) {
-    return GetSkyRadiance(uAtmosphere, transmittanceTexture, scatteringTexture, singleMieScatteringTexture, camera, view_ray, shadow_length, sun_direction, transmittance);
-}
-vec3 GetSkyRadianceToPoint(vec3 camera, vec3 point, float shadow_length, vec3 sun_direction, out vec3 transmittance) {
-    return GetSkyRadianceToPoint(uAtmosphere, transmittanceTexture, scatteringTexture, singleMieScatteringTexture, camera, point, shadow_length, sun_direction, transmittance);
-}
-vec3 GetSunAndSkyIrradiance(vec3 p, vec3 normal, vec3 sun_direction, out vec3 sky_irradiance) {
-    return GetSunAndSkyIrradiance(uAtmosphere, transmittanceTexture, irradianceTexture, p, normal, sun_direction, sky_irradiance);
+vec3 tonemapACES(vec3 x) {
+    float a = 2.51;
+    float b = 0.03;
+    float c = 2.43;
+    float d = 0.59;
+    float e = 0.14;
+    return clamp((x * (a * x + b)) / (x * (c * x + d) + e), 0.0, 1.0);
 }
 
 void main() {
-    vec3 viewDir = normalize(view_ray);
+    vec2 uv = gl_FragCoord.xy / vec2(resolution);
+    float depth = texture(depthSampler, uv).r;
 
-    vec4 sceneSample = texture(textureSampler, fragTexCoord);
-    vec3 sceneColor = sceneSample.rgb;
-    float depth = texture(depthSampler, fragTexCoord).r;
+    vec3 worldDir = normalize(view_ray);
 
-    vec3 transmittance;
-    vec3 radiance = vec3(0.0);
-    float shadowLength = 0.0;
-    vec3 camera = camPos/1000;
+    vec3 worldPos = camPos + vec3(0.0, uAtmosphere.BottomRadius, 0.0);
+    float viewHeight = length(worldPos);
 
+    vec3 finalLuminance = vec3(0.0);
+    float opacity = 0.0;
 
-    if (depth >= 1) {
-        radiance = GetSkyRadiance(camera - earth_center, viewDir, shadowLength, sun_direction, transmittance);
+    if (depth >= 1.0 || depth <= 0.0) {
+        vec3 upVector = normalize(worldPos);
+        float viewZenithCosAngle = dot(worldDir, upVector);
 
-        float dotViewSun = dot(viewDir, sun_direction);
-        float sunAlpha = smoothstep(sun_size.y - 0.0001, sun_size.y + 0.0001, dotViewSun);
-        if (sunAlpha > 0.0) {
-            radiance += sunAlpha * transmittance * GetSolarRadiance();
+        vec3 sideVector = normalize(cross(upVector, worldDir));
+        vec3 forwardVector = normalize(cross(sideVector, upVector));
+        vec2 lightOnPlane = normalize(vec2(dot(sunDirection, forwardVector), dot(sunDirection, sideVector)));
+        float lightViewCosAngle = lightOnPlane.x;
+
+        bool intersectGround = raySphereIntersectNearest(worldPos, worldDir, vec3(0.0), uAtmosphere.BottomRadius) >= 0.0;
+
+        vec2 lutUv;
+        SkyViewLutParamsToUv(uAtmosphere, intersectGround, viewZenithCosAngle, lightViewCosAngle, viewHeight, lutUv);
+
+        finalLuminance = texture(skyViewTexture, lutUv).rgb;
+        finalLuminance += GetSunLuminance(worldPos, worldDir, uAtmosphere.BottomRadius);
+        opacity = 1.0;
+    }
+    else {
+        vec3 sceneColor = texture(textureSampler, uv).rgb;
+
+        float tDepth = getDistance(depth, uv);
+
+        float slice = tDepth / AP_KM_PER_SLICE;
+        float weight = 1.0;
+        if (slice < 0.5) {
+            weight = clamp(slice * 2.0, 0.0, 1.0);
+            slice = 0.5;
         }
-        radiance = pow(vec3(1.0) - exp(-radiance / white_point * exposure), vec3(1.0 / 2.2));
-    } else {
-        radiance = sceneColor;
+
+        float w = sqrt(slice / AP_SLICE_COUNT);
+
+        vec4 apSample = texture(aerialPerspectiveTexture, vec3(uv, w));
+
+        finalLuminance = sceneColor * (1.0 - apSample.a) + (apSample.rgb * weight);
+        opacity = 1.0;
     }
 
-    vec3 color = radiance;
+//    finalLuminance *= exposure;
+    finalLuminance = tonemapACES(finalLuminance);
 
-    fragColor = vec4(color, 1.0);
+//    finalLuminance = pow(finalLuminance, vec3(1.0 / 2.2));
+
+    fragColor = vec4(finalLuminance, opacity);
 }
 

@@ -2,9 +2,6 @@ package palecek.logic;
 
 import org.joml.*;
 import palecek.Main;
-import palecek.bruneton.BrunetonModel;
-import palecek.bruneton.BrunetonPostprocessModule;
-import palecek.bruneton.BrunetonPrecompute;
 import palecek.core.*;
 import palecek.core.entity.SceneManager;
 import palecek.core.gui.ImGuiLayer;
@@ -51,7 +48,7 @@ public class HillaireScene implements ILogic {
         objectLoader = new ObjectLoader();
         camera = new Camera();
         cameraInc = new Vector3f(0, 0, 0);
-        camera.setPosition(0, 10, 0);
+        camera.setPosition(10, 10, -10);
         sceneManager = new SceneManager(-90, camera);
     }
 
@@ -64,12 +61,14 @@ public class HillaireScene implements ILogic {
 
         // Planet
 //        planetRenderer = new PlanetRenderer();
+        windowManager.updateProjectionMatrix();
         hillarieModel = new HillarieModel();
         Vector2i transmittanceSize = new Vector2i(256, 64);
         Vector2i scatteringSize = new Vector2i(32, 32);
-        Vector2i skyViewSize = new Vector2i(192, 108);
-        HillariePrecompute hillariePrecompute = new HillariePrecompute(transmittanceSize, scatteringSize, skyViewSize);
-        ITexture[] textures = hillariePrecompute.precompute(new ComputeShaderManager(), hillarieModel);
+        Vector2i skyViewSize = new Vector2i(200, 100);
+        Vector3i arialPerspectiveSize = new Vector3i(32);
+        HillariePrecompute hillariePrecompute = new HillariePrecompute(transmittanceSize, scatteringSize, skyViewSize, arialPerspectiveSize);
+        ITexture[] textures = hillariePrecompute.precompute(hillarieModel, camera);
 
 //        ITexture[] texturesArray = {
 //                new Texture(transmittanceSize.x, transmittanceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/transmittance.dat", transmittanceSize.x, transmittanceSize.y, 1, 4)),
@@ -85,7 +84,7 @@ public class HillaireScene implements ILogic {
         terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 
-        HillariePostprocessModule hillariePostprocessModule = new HillariePostprocessModule(hillarieModel, textures, scatteringSize, transmittanceSize);
+        HillariePostprocessModule hillariePostprocessModule = new HillariePostprocessModule(hillarieModel, textures, scatteringSize, transmittanceSize, skyViewSize, arialPerspectiveSize);
         renderManager.init(List.of(hillariePostprocessModule), "hillaire", camera, terrainRenderer);
 
 //        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());

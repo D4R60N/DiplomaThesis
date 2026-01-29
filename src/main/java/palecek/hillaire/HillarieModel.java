@@ -23,10 +23,11 @@ public class HillarieModel {
     private Vector3f absorptionExtinction;
     private Vector3f groundAlbedo;
     private float exposure;
-    private Vector3f whitePoint;
+    private Vector3f sunIlluminance;
 
     private float sunZenith;
     private float sunAzimuth;
+    private Vector3f sunDirection;
 
     public HillarieModel() {
         this.bottomRadius = 6360.0f;
@@ -45,11 +46,16 @@ public class HillarieModel {
         this.absorptionDensity1LinearTerm = -1.0f / 15.0f;
         this.absorptionExtinction = new Vector3f(0.000650f, 0.001881f, 0.000085f);
         this.groundAlbedo = new Vector3f(0.1f, 0.1f, 0.1f);
+        this.sunIlluminance = new Vector3f(10.0f, 10.0f, 10.0f);
 
         this.exposure = 10.0f;
-        this.whitePoint = new Vector3f(1.0f, 1.0f, 1.0f);
-        this.sunZenith = (float)Math.PI / 2.0f;
+        this.sunZenith = 1f;
         this.sunAzimuth = 0.0f;
+        this.sunDirection = calculateSunPosition();
+    }
+
+    public Vector3f calculateSunPosition() {
+        return calculateSunPosition(sunAzimuth, sunZenith);
     }
 
     public Vector3f calculateSunPosition(float azimuth, float zenith) {
@@ -138,5 +144,24 @@ public class HillarieModel {
         manager.setUniform(uniformName + ".AbsorptionDensity1LinearTerm", absorptionDensity1LinearTerm);
         manager.setUniform(uniformName + ".AbsorptionExtinction", absorptionExtinction);
         manager.setUniform(uniformName + ".GroundAlbedo", groundAlbedo);
+    }
+
+    public Vector3f getSunDirection() {
+        return sunDirection;
+    }
+
+    public float getSunAzimuth() {
+        return sunAzimuth;
+    }
+
+    public float getSunZenith() {
+        return sunZenith;
+    }
+
+    public float getExposure() {
+        return exposure;
+    }
+    public Vector3f getSunIlluminance() {
+        return sunIlluminance;
     }
 }

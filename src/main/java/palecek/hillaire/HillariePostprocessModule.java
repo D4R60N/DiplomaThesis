@@ -1,6 +1,8 @@
 package palecek.hillaire;
 
 import org.joml.Vector2i;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.joml.Vector4i;
 import palecek.bruneton.BrunetonModel;
 import palecek.core.ShaderManager;
@@ -9,24 +11,30 @@ import palecek.core.utils.*;
 
 public class HillariePostprocessModule implements IShaderModule {
     private final HillarieModel model;
-    private Texture transmittanceTexture, irradianceTexture;
-    private Texture3D scatteringTexture, singleMieScatteringTexture;
-    private final Vector2i transmittanceSize, scatteringSize;
+    private Texture transmittanceTexture, multiscatteringTexture, skyViewTexture;
+    private Texture3D aerialPerspectiveTexture;
+    private final Vector2i transmittanceSize, multiScatteringSize, skyViewSize;
+    private final Vector3i arialPerspectiveSize;
 
-    public HillariePostprocessModule(HillarieModel model, ITexture[] textures, Vector2i scatteringSize, Vector2i transmittanceSize) {
+    public HillariePostprocessModule(HillarieModel model, ITexture[] textures, Vector2i multiScatteringSize, Vector2i transmittanceSize, Vector2i skyViewSize, Vector3i arialPerspectiveSize) {
         this.model = model;
         this.transmittanceTexture = (Texture) textures[0];
-        this.irradianceTexture = (Texture) textures[1];
-        this.scatteringTexture = (Texture3D) textures[2];
-        this.singleMieScatteringTexture = (Texture3D) textures[3];
-        this.scatteringSize = scatteringSize;
+        this.multiscatteringTexture = (Texture) textures[1];
+        this.skyViewTexture = (Texture) textures[2];
+        this.aerialPerspectiveTexture = (Texture3D) textures[3];
+        this.multiScatteringSize = multiScatteringSize;
         this.transmittanceSize = transmittanceSize;
+        this.skyViewSize = skyViewSize;
+        this.arialPerspectiveSize = arialPerspectiveSize;
     }
 
     @Override
     public void createUniforms(ShaderManager shaderManager) throws Exception {
-
         model.createUniforms(shaderManager, "uAtmosphere");
+        shaderManager.createUniform("exposure");
+        shaderManager.createUniform("sunDirection");
+        shaderManager.createUniform("sunIlluminance");
+
         shaderManager.createUniform("transmittanceTexture");
         shaderManager.createUniform("irradianceTexture");
         shaderManager.createUniform("scatteringTexture");
@@ -34,8 +42,8 @@ public class HillariePostprocessModule implements IShaderModule {
 
         shaderManager.createUniform("uScatteringTextureSize");
         shaderManager.createUniform("uTransmittanceTextureSize");
-        shaderManager.createUniform("uIrradianceTextureSize");
-
+        shaderManager.createUniform("uSkyViewTextureSize");
+        shaderManager.createUniform("uAerialPerspectiveTextureSize");
     }
 
     @Override
@@ -45,14 +53,18 @@ public class HillariePostprocessModule implements IShaderModule {
 
     @Override
     public void setUniforms(ShaderManager shaderManager, RenderTarget renderTarget) {
-        model.setUniforms(shaderManager, "uAtmosphere");
+        shaderManager.setUniform("exposure", model.getExposure());
+        shaderManager.setUniform("sunDirection", model.getSunDirection());
+        shaderManager.setUniform("sunIlluminance", model.getSunIlluminance());
         transmittanceTexture.bind(shaderManager.getShaderProgram(), "transmittanceTexture", 2);
-        irradianceTexture.bind(shaderManager.getShaderProgram(), "irradianceTexture", 3);
-        scatteringTexture.bind(shaderManager.getShaderProgram(), "scatteringTexture", 4);
-        singleMieScatteringTexture.bind(shaderManager.getShaderProgram(), "singleMieScatteringTexture", 5);
+        multiscatteringTexture.bind(shaderManager.getShaderProgram(), "multiScatteringTexture", 2);
+        skyViewTexture.bind(shaderManager.getShaderProgram(), "skyViewTexture", 3);
+        aerialPerspectiveTexture.bind(shaderManager.getShaderProgram(), "aerialPerspectiveTexture", 4);
 
-        shaderManager.setUniform("uScatteringTextureSize", scatteringSize);
         shaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
+        shaderManager.setUniform("uScatteringTextureSize", multiScatteringSize);
+        shaderManager.setUniform("uSkyViewTextureSize", skyViewSize);
+        shaderManager.setUniform("uAerialPerspectiveTextureSize", arialPerspectiveSize);
 
     }
 

@@ -46,7 +46,11 @@ public class BrunetonPostprocessModule implements IShaderModule {
 
     @Override
     public void setUniforms(ShaderManager shaderManager, RenderTarget renderTarget) {
-        model.setUniforms(shaderManager, "uAtmosphere");
+        shaderManager.setUniform("exposure", model.getExposure());
+        shaderManager.setUniform("white_point", model.getWhitePoint());
+        shaderManager.setUniform("earth_center", model.getEarthCenter());
+        shaderManager.setUniform("sun_direction", model.getSunDirection());
+        shaderManager.setUniform("sun_size", model.getSunSize());
         transmittanceTexture.bind(shaderManager.getShaderProgram(), "transmittanceTexture", 2);
         irradianceTexture.bind(shaderManager.getShaderProgram(), "irradianceTexture", 3);
         scatteringTexture.bind(shaderManager.getShaderProgram(), "scatteringTexture", 4);
