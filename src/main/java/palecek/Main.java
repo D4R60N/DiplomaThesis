@@ -13,10 +13,10 @@ public class Main {
     private static WindowManager windowManager = new WindowManager(Constants.TITLE, 0, 0, true);
     private static LogicManager logicManager = new LogicManager(
             List.of(
-//                    new MainMenuScene(),
-//                    new PreethamScene(),
-//                    new HosekWilkieScene()
-//                    new BrunetonScene() todo fix compute shader layout
+                    new MainMenuScene(),
+                    new PreethamScene(),
+                    new HosekWilkieScene(),
+                    new BrunetonScene(), //todo fix compute shader layout
                     new HillaireScene()
             )
     );

@@ -23,6 +23,9 @@ import palecek.hillaire.HillariePrecompute;
 
 import java.util.List;
 
+import static org.lwjgl.opengl.GL42C.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
+import static org.lwjgl.opengl.GL42C.glMemoryBarrier;
+
 
 public class HillaireScene implements ILogic {
     private final RenderManager renderManager;
@@ -37,6 +40,7 @@ public class HillaireScene implements ILogic {
     private TerrainRenderer terrainRenderer;
     private TerrainGenerator terrainGenerator;
     private LogicManager logicManager;
+    private HillariePrecompute hillariePrecompute;
 
     private float speed = 0.0f;
 
@@ -48,7 +52,7 @@ public class HillaireScene implements ILogic {
         objectLoader = new ObjectLoader();
         camera = new Camera();
         cameraInc = new Vector3f(0, 0, 0);
-        camera.setPosition(10, 10, -10);
+        camera.setPosition(0, 10, 0);
         sceneManager = new SceneManager(-90, camera);
     }
 
@@ -67,7 +71,7 @@ public class HillaireScene implements ILogic {
         Vector2i scatteringSize = new Vector2i(32, 32);
         Vector2i skyViewSize = new Vector2i(200, 100);
         Vector3i arialPerspectiveSize = new Vector3i(32);
-        HillariePrecompute hillariePrecompute = new HillariePrecompute(transmittanceSize, scatteringSize, skyViewSize, arialPerspectiveSize);
+        hillariePrecompute = new HillariePrecompute(transmittanceSize, scatteringSize, skyViewSize, arialPerspectiveSize);
         ITexture[] textures = hillariePrecompute.precompute(hillarieModel, camera);
 
 //        ITexture[] texturesArray = {
@@ -118,9 +122,11 @@ public class HillaireScene implements ILogic {
         }
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_R.val)) {
             hillarieModel.rotateSun(-.01f, 0);
+            hillariePrecompute.updateMultiScattering(hillarieModel);
         }
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_F.val)) {
             hillarieModel.rotateSun(.01f, 0);
+            hillariePrecompute.updateMultiScattering(hillarieModel);
         }
         if (windowManager.isKeyTyped(GLFWEnum.GLFW_KEY_TAB.val)) {
             if (!showGui) {
@@ -153,6 +159,8 @@ public class HillaireScene implements ILogic {
 //        for (Planet planet : sceneManager.getPlanets()) {
 //            planetRenderer.processPlanet(planet);
 //        }
+        hillariePrecompute.updateSkyAndFog(hillarieModel, camera);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         for (Terrain terrain : sceneManager.getTerrains()) {
             terrainRenderer.processTerrain(terrain);
         }

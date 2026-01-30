@@ -1,9 +1,7 @@
 package palecek.hillaire;
 
-import org.joml.Vector2i;
-import org.joml.Vector3f;
-import org.joml.Vector3i;
-import org.joml.Vector4i;
+import org.joml.*;
+import palecek.Main;
 import palecek.bruneton.BrunetonModel;
 import palecek.core.ShaderManager;
 import palecek.core.entity.IShaderModule;
@@ -65,6 +63,7 @@ public class HillariePostprocessModule implements IShaderModule {
         shaderManager.setUniform("uScatteringTextureSize", multiScatteringSize);
         shaderManager.setUniform("uSkyViewTextureSize", skyViewSize);
         shaderManager.setUniform("uAerialPerspectiveTextureSize", arialPerspectiveSize);
+        model.setUniforms(shaderManager, "uAtmosphere");
 
     }
 
@@ -75,6 +74,6 @@ public class HillariePostprocessModule implements IShaderModule {
 
     @Override
     public void prepare(ShaderManager shaderManager, Counter counter) {
-        shaderManager.setUniform("uAtmosphere", counter.increment());
+
     }
 }

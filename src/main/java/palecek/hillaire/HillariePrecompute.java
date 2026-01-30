@@ -12,9 +12,8 @@ import java.lang.Math;
 
 import static org.lwjgl.opengl.ARBShadingLanguageInclude.GL_SHADER_INCLUDE_ARB;
 import static org.lwjgl.opengl.ARBShadingLanguageInclude.glNamedStringARB;
-import static org.lwjgl.opengl.GL11.GL_FLOAT;
-import static org.lwjgl.opengl.GL11.GL_RGBA;
-import static org.lwjgl.opengl.GL11C.glDeleteTextures;
+import static org.lwjgl.opengl.GL11.*;
+import static org.lwjgl.opengl.GL12.*;
 import static org.lwjgl.opengl.GL30C.GL_RGBA32F;
 import static org.lwjgl.opengl.GL42.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
 import static org.lwjgl.opengl.GL42C.GL_ALL_BARRIER_BITS;
@@ -35,6 +34,7 @@ public class HillariePrecompute {
         multipleScatteringMap = new Texture(scatteringSize.x, scatteringSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
         skyViewMap = new Texture(skyViewSize.x, skyViewSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
         aerialPerspectiveMap = new Texture3D(aerialPerspectiveSize.x, aerialPerspectiveSize.y, aerialPerspectiveSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+        setupLinearFiltering();
         this.transmittanceSize = transmittanceSize;
         this.scatteringSize = scatteringSize;
         this.skyViewSize = skyViewSize;
@@ -278,13 +278,14 @@ public class HillariePrecompute {
         computeShaderManager.bind();
 
         Matrix4f viewMatrixRot = Transformation.getViewMatrixRotationOnly(camera);
+        Matrix4f viewMatrix = Transformation.getViewMatrix(camera);
         Matrix4f projectionMatrix = Main.getWindowManager().getProjectionMatrix();
         Matrix4f invViewProj = new Matrix4f();
 
         computeShaderManager.setUniform("sunIlluminance", model.getSunIlluminance());
         computeShaderManager.setUniform("projMatInv", new Matrix4f(projectionMatrix).invert());
         computeShaderManager.setUniform("viewMatInv", new Matrix4f(viewMatrixRot).invert());
-        computeShaderManager.setUniform("invViewProj", projectionMatrix.invertPerspectiveView(viewMatrixRot, invViewProj));
+        computeShaderManager.setUniform("invViewProj", projectionMatrix.invertPerspectiveView(viewMatrix, invViewProj));
         computeShaderManager.setUniform("sunDirection", model.getSunDirection());
         computeShaderManager.setUniform("camera", camera.getPosition());
 
@@ -304,5 +305,42 @@ public class HillariePrecompute {
 
         computeShaderManager.memoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
         computeShaderManager.unbind();
+    }
+
+    public void updateMultiScattering(HillarieModel model) {
+        precomputeMultiScattering(multiScatteringComputeShaderManager, model);
+    }
+
+    public void updateSkyAndFog(HillarieModel model, Camera camera) {
+        precomputeSkyView(skyViewComputeShaderManager, model, camera);
+        precomputeAerialPerspective(aerialPerspectiveComputeShaderManager, model, camera);
+    }
+    private void setupLinearFiltering() {
+        glBindTexture(GL_TEXTURE_3D, aerialPerspectiveMap.getId());
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+        glBindTexture(GL_TEXTURE_2D, skyViewMap.getId());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glBindTexture(GL_TEXTURE_2D, transmittanceMap.getId());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glBindTexture(GL_TEXTURE_2D, multipleScatteringMap.getId());
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
     }
 }

@@ -48,8 +48,8 @@ public class HillarieModel {
         this.groundAlbedo = new Vector3f(0.1f, 0.1f, 0.1f);
         this.sunIlluminance = new Vector3f(10.0f, 10.0f, 10.0f);
 
-        this.exposure = 10.0f;
-        this.sunZenith = 1f;
+        this.exposure = 0.2f;
+        this.sunZenith = (float) Math.toRadians(90.0f);
         this.sunAzimuth = 0.0f;
         this.sunDirection = calculateSunPosition();
     }
@@ -68,6 +68,7 @@ public class HillarieModel {
     public void rotateSun(float incZenith, float incAzimuth) {
         sunZenith += incZenith;
         sunAzimuth += incAzimuth;
+        sunDirection = calculateSunPosition();
     }
 
     public void createUniforms(ComputeShaderManager manager, String uniformName) {

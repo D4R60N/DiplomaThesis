@@ -445,6 +445,7 @@ in bool MieRayPhase, in float tMaxMax, vec2 resolution)
             DepthBufferWorldPos /= DepthBufferWorldPos.w;
 
             float tDepth = length(DepthBufferWorldPos.xyz - (WorldPos + vec3(0.0,  -Atmosphere.BottomRadius, 0.0)));
+            tDepth *= 0.001f; // m to km
             if (tDepth < tMax)
             {
                 tMax = tDepth;

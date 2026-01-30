@@ -19,7 +19,7 @@ uniform float MultipleScatteringFactor = 1.0;
 shared vec3 MultiScatAs1SharedMem[64];
 shared vec3 LSharedMem[64];
 #define MULTISCATAPPROX_ENABLED 0
-const bool RENDER_SUN_DISK = false;
+const bool RENDER_SUN_DISK = true;
 #include "/common.glsl"
 uniform AtmosphereParameters uAtmosphere;
 

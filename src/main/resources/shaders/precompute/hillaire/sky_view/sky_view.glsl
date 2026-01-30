@@ -17,7 +17,7 @@ uniform vec3 sunDirection;
 uniform vec3 camera;
 
 #define MULTISCATAPPROX_ENABLED 1
-const bool RENDER_SUN_DISK = false;
+const bool RENDER_SUN_DISK = true;
 #include "/common.glsl"
 uniform AtmosphereParameters uAtmosphere;
 
@@ -32,8 +32,9 @@ void main() {
 
     vec2 pixPos = vec2(texelCoord) + 0.5;
     vec2 uv = pixPos / vec2(uSkyViewTextureSize);
+    vec3 camPosKM = camera * 0.001;
 
-    vec3 WorldPos = camera + vec3(0, Atmosphere.BottomRadius, 0);
+    vec3 WorldPos = camPosKM + vec3(0.0, Atmosphere.BottomRadius, 0.0);
 
     float viewHeight = length(WorldPos);
 
