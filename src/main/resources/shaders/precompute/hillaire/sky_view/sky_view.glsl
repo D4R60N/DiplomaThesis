@@ -15,6 +15,7 @@ uniform vec2 RayMarchMinMaxSPP;
 uniform vec3 sunIlluminance;
 uniform vec3 sunDirection;
 uniform vec3 camera;
+uniform bool isSmall;
 
 #define MULTISCATAPPROX_ENABLED 1
 const bool RENDER_SUN_DISK = true;
@@ -32,7 +33,12 @@ void main() {
 
     vec2 pixPos = vec2(texelCoord) + 0.5;
     vec2 uv = pixPos / vec2(uSkyViewTextureSize);
-    vec3 camPosKM = camera * 0.001;
+    vec3 camPosKM;
+    if (isSmall) {
+        camPosKM = camera * GU_TO_KM;
+    } else {
+        camPosKM = camera * 0.001;
+    }
 
     vec3 WorldPos = camPosKM + vec3(0.0, Atmosphere.BottomRadius, 0.0);
 

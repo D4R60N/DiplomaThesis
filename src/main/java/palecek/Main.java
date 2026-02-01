@@ -6,6 +6,7 @@ import palecek.core.WindowManager;
 import palecek.core.utils.Constants;
 import palecek.logic.*;
 
+import java.io.Console;
 import java.util.List;
 
 public class Main {
@@ -17,12 +18,12 @@ public class Main {
                     new PreethamScene(),
                     new HosekWilkieScene(),
                     new BrunetonScene(), //todo fix compute shader layout
-                    new HillaireScene()
+                    new HillaireScene(),
+                    new HillaireSmallPlanetScene()
             )
     );
 
     public static void main(String[] args) {
-
         ApplicationManager applicationManager = new ApplicationManager();
         try {
             applicationManager.start();

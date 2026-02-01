@@ -55,68 +55,48 @@ void main() {
     float viewHeight = length(WorldPos);
 
     vec3 L = vec3(0.0);
-    float Opacity = 0.0;
+    float opacity = 0.0;
 
     if (viewHeight < uAtmosphere.TopRadius && depth >= 1.0) {
-        vec3 UpVector = normalize(WorldPos);
-        float viewZenithCosAngle = dot(WorldDir, UpVector);
-
-        vec3 sideVector = normalize(cross(UpVector, WorldDir));
+        vec3 upVector = normalize(WorldPos);
+        float viewZenithCosAngle = dot(WorldDir, upVector);
+        vec3 sideVector = normalize(cross(upVector, WorldDir));
         if (length(sideVector) < 0.001) sideVector = vec3(1, 0, 0);
-        vec3 forwardVector = normalize(cross(sideVector, UpVector));
-
+        vec3 forwardVector = normalize(cross(sideVector, upVector));
         vec2 lightOnPlane = normalize(vec2(dot(sunDirection, forwardVector), dot(sunDirection, sideVector)));
         float lightViewCosAngle = lightOnPlane.x;
-
-        bool IntersectGround = raySphereIntersectNearest(WorldPos, WorldDir, vec3(0.0), uAtmosphere.BottomRadius) >= 0.0f;
-
+        bool itersectGround = raySphereIntersectNearest(WorldPos, WorldDir, vec3(0.0), uAtmosphere.BottomRadius) >= 0.0f;
         vec2 skyUv;
-        SkyViewLutParamsToUv(uAtmosphere, IntersectGround, viewZenithCosAngle, lightViewCosAngle, viewHeight, skyUv);
-
+        SkyViewLutParamsToUv(uAtmosphere, itersectGround, viewZenithCosAngle, lightViewCosAngle, viewHeight, skyUv);
         L = texture(skyViewTexture, skyUv).rgb;
         L += GetSunLuminance(WorldPos, WorldDir, uAtmosphere.BottomRadius);
-        Opacity = 1.0;
+        opacity = 1.0;
     }
     else {
         vec3 depthClipSpace = vec3(uv * 2.0 - 1.0, depth * 2.0 - 1.0);
         vec4 DepthBufferWorldPos = invViewProj * vec4(depthClipSpace, 1.0);
         DepthBufferWorldPos /= DepthBufferWorldPos.w;
-
         float tDepth = length(DepthBufferWorldPos.xyz - camPos);
         tDepth *= 0.001;
-
         float Slice = AerialPerspectiveDepthToSlice(tDepth);
         float Weight = 1.0;
-
         if (Slice < 0.5) {
             Weight = saturate(Slice * 2.0);
             Slice = 0.5;
         }
-
         float w = sqrt(Slice / AP_SLICE_COUNT);
-
         vec4 AP = texture(aerialPerspectiveTexture, vec3(uv.x, uv.y, w));
-
         L.rgb = AP.rgb * Weight;
-
-        Opacity = AP.a * Weight;
-
+        opacity = AP.a * Weight;
         vec3 sceneColor = texture(textureSampler, uv).rgb;
-        L = sceneColor * (1.0 - Opacity) + L.rgb;
-        Opacity = 1.0;
+        L = sceneColor * (1.0 - opacity) + L.rgb;
+        opacity = 1.0;
     }
-//    else {
-//        L = texture(textureSampler, uv).rgb;
-//        Opacity = 1.0;
-//    }
 
-    // 3. FINAL OUTPUT PROCESSING
     L *= exposure;
     L = tonemapACES(L);
-
-//     Linear to sRGB (Gamma correction)
     L = pow(L, vec3(1.0 / 2.2));
 
-    fragColor = vec4(L, Opacity);
+    fragColor = vec4(L, opacity);
 }
 

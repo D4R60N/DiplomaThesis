@@ -212,12 +212,14 @@ public class HillariePrecompute {
         computeShaderManager.createUniform("sunIlluminance");
         computeShaderManager.createUniform("sunDirection");
         computeShaderManager.createUniform("camera");
+        computeShaderManager.createUniform("isSmall");
         model.createUniforms(computeShaderManager, "uAtmosphere");
 
         computeShaderManager.setUniform("uSkyViewTextureSize", skyViewSize);
         computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
         computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
         computeShaderManager.setUniform("RayMarchMinMaxSPP", new Vector2f(4.0f, 14.0f));
+        computeShaderManager.setUniform("isSmall", model.isSmall());
         model.setUniforms(computeShaderManager, "uAtmosphere");
     }
 
@@ -262,12 +264,14 @@ public class HillariePrecompute {
         computeShaderManager.createUniform("invViewProj");
         computeShaderManager.createUniform("sunDirection");
         computeShaderManager.createUniform("camera");
+        computeShaderManager.createUniform("isSmall");
         model.createUniforms(computeShaderManager, "uAtmosphere");
 
         computeShaderManager.setUniform("uAerialPerspectiveTextureSize", aerialPerspectiveSize);
         computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
         computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
         computeShaderManager.setUniform("RayMarchMinMaxSPP", new Vector2f(4.0f, 14.0f));
+        computeShaderManager.setUniform("isSmall", model.isSmall());
         model.setUniforms(computeShaderManager, "uAtmosphere");
     }
 

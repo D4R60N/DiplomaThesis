@@ -33,8 +33,8 @@ public class BrunetonModel {
     public BrunetonModel() {
         this.solarIrradiance = new Vector3f(1.474f, 1.8504f, 2.1229f);
         this.sunAngularRadius = 0.004675f;
-        this.bottomRadius = 6360.0f;
-        this.topRadius = 6420.0f;
+        this.bottomRadius = 1;
+        this.topRadius = 2;
         this.groundAlbedo = new Vector3f(0.1f, 0.1f, 0.1f);
         this.muSMin = -0.207912f;
 

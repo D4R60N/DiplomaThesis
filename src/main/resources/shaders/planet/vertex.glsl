@@ -24,7 +24,7 @@ vec3 sphereify(float x, float y) {
     float zenith = clamp(x * PI, 0.001, PI - 0.001);
     float azimuth = mod(y * 4.0 * PI, 4.0 * PI);
     float height = texture(heightMap, texCoord).r;
-    float r = radius + height * .05* radius;
+    float r = radius;
 
     float _x = r * sin(zenith) * cos(azimuth);
     float _y = r * cos(zenith);

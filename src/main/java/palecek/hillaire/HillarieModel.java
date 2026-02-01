@@ -28,17 +28,18 @@ public class HillarieModel {
     private float sunZenith;
     private float sunAzimuth;
     private Vector3f sunDirection;
+    private boolean isSmall = false;
 
     public HillarieModel() {
         this.bottomRadius = 6360.0f;
-        this.topRadius = 6420.0f;
+        this.topRadius = 6520.0f;
         this.rayleighDensityExpScale = -1.0f / 8.0f;
         this.rayleighScattering = new Vector3f(0.005802f, 0.013558f, 0.033100f);
         this.mieDensityExpScale = -1.0f / 1.2f;
         this.mieScattering = new Vector3f(0.003996f, 0.003996f, 0.003996f);
         this.mieExtinction = new Vector3f(0.004440f, 0.004440f, 0.004440f);
         this.mieAbsorption = new Vector3f(0.000444f, 0.000444f, 0.000444f); // Example value
-        this.miePhaseG = 0.8f;
+        this.miePhaseG = 0.08f;
         this.absorptionDensity0LayerWidth = 25.0f;
         this.absorptionDensity0ConstantTerm = -2.0f / 3.0f;
         this.absorptionDensity0LinearTerm = 1.0f / 15.0f;
@@ -49,16 +50,21 @@ public class HillarieModel {
         this.sunIlluminance = new Vector3f(10.0f, 10.0f, 10.0f);
 
         this.exposure = 0.2f;
-        this.sunZenith = (float) Math.toRadians(90.0f);
+        this.sunZenith = (float)Math.toRadians(90.0f);
         this.sunAzimuth = 0.0f;
         this.sunDirection = calculateSunPosition();
+    }
+    public static HillarieModel getSmallPlanet() {
+        HillarieModel model = new HillarieModel();
+        model.isSmall = true;
+        return model;
     }
 
     public Vector3f calculateSunPosition() {
         return calculateSunPosition(sunAzimuth, sunZenith);
     }
 
-    public Vector3f calculateSunPosition(float azimuth, float zenith) {
+    public static Vector3f calculateSunPosition(float azimuth, float zenith) {
         float x = (float)(Math.sin(zenith) * Math.sin(azimuth));
         float y = (float)(Math.cos(zenith));
         float z = (float)(Math.sin(zenith) * Math.cos(azimuth));
@@ -164,5 +170,8 @@ public class HillarieModel {
     }
     public Vector3f getSunIlluminance() {
         return sunIlluminance;
+    }
+    public boolean isSmall() {
+        return isSmall;
     }
 }

@@ -16,7 +16,7 @@ public class PauseMenu extends ImGuiLayer {
     //                    ImGuiWindowFlags.NoTitleBar;
     private float displayWidth;
     private float displayHeight;
-    private float windowWidth = 400;
+    private float windowWidth = 300;
     private float windowHeight = 600;
     private float posX;
     private float posY;
@@ -47,27 +47,32 @@ public class PauseMenu extends ImGuiLayer {
         ImGui.begin("Main Menu", windowFlags);
 
 
-        if (centeredButton("Preetham", 200, 40)) {
+        if (centeredButton("Preetham", 100, 30)) {
             logicManager.switchToLogic(1);
             closeCallback.execute();
         }
 
-        if (centeredButton("Hosek Wilkie", 200, 40)) {
+        if (centeredButton("Hosek Wilkie", 100, 30)) {
             logicManager.switchToLogic(2);
             closeCallback.execute();
         }
 
-        if (centeredButton("Bruneton", 200, 40)) {
+        if (centeredButton("Bruneton", 100, 30)) {
             logicManager.switchToLogic(3);
             closeCallback.execute();
         }
 
-        if (centeredButton("Hillaire", 200, 40)) {
+        if (centeredButton("Hillaire", 100, 30)) {
             logicManager.switchToLogic(4);
             closeCallback.execute();
         }
 
-        if (centeredButton("Main Menu", 200, 40)) {
+        if (centeredButton("Hillaire Small Planet", 100, 30)) {
+            logicManager.switchToLogic(5);
+            closeCallback.execute();
+        }
+
+        if (centeredButton("Main Menu", 100, 30)) {
             logicManager.switchToLogic(0);
             closeCallback.execute();
         }

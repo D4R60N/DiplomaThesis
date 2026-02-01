@@ -16,7 +16,7 @@ public class MainMenu extends ImGuiLayer {
     //                    ImGuiWindowFlags.NoTitleBar;
     private float displayWidth;
     private float displayHeight;
-    private float windowWidth = 400;
+    private float windowWidth = 300;
     private float windowHeight = 600;
     private float posX;
     private float posY;
@@ -47,27 +47,31 @@ public class MainMenu extends ImGuiLayer {
         ImGui.begin("Main Menu", windowFlags);
 
 
-        if (centeredButton("Preetham", 200, 40)) {
+        if (centeredButton("Preetham", 200, 30)) {
             logicManager.switchToLogic(1);
             mouseInput.restoreMouseForApp();
         }
 
-        if (centeredButton("Hosek Wilkie", 200, 40)) {
+        if (centeredButton("Hosek Wilkie", 200, 30)) {
             logicManager.switchToLogic(2);
             mouseInput.restoreMouseForApp();
         }
 
-        if (centeredButton("Bruneton", 200, 40)) {
+        if (centeredButton("Bruneton", 200, 30)) {
             logicManager.switchToLogic(3);
             mouseInput.restoreMouseForApp();
         }
 
-        if (centeredButton("Bruneton", 200, 40)) {
+        if (centeredButton("Hillaire", 200, 30)) {
             logicManager.switchToLogic(4);
             mouseInput.restoreMouseForApp();
         }
+        if (centeredButton("Hillaire Small Planet", 200, 30)) {
+            logicManager.switchToLogic(5);
+            mouseInput.restoreMouseForApp();
+        }
 
-        if (centeredButton("Quit", 200, 40)) {
+        if (centeredButton("Quit", 200, 30)) {
 
         }
 
@@ -79,7 +83,7 @@ public class MainMenu extends ImGuiLayer {
     private boolean centeredButton(String label, float width, float height) {
         float windowWidth = ImGui.getWindowSizeX();
         float cursorX = (windowWidth - width) / 2.0f;
-        float cursorY = (windowHeight - height) / 6.0f;
+        float cursorY = (windowHeight - height) / 12.0f;
 
         ImGui.setCursorPosX(cursorX);
         ImGui.setCursorPosY(cursorY + ImGui.getCursorPosY());

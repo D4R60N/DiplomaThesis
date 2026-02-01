@@ -1,16 +1,19 @@
 package palecek.logic;
 
-import org.joml.*;
+import org.joml.Vector2f;
+import org.joml.Vector2i;
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 import palecek.Main;
 import palecek.core.*;
 import palecek.core.entity.SceneManager;
 import palecek.core.gui.ImGuiLayer;
 import palecek.core.lighting.DirectionalLight;
+import palecek.core.planet.Planet;
 import palecek.core.planet.PlanetGenerator;
 import palecek.core.rendering.PlanetRenderer;
 import palecek.core.rendering.RenderManager;
 import palecek.core.rendering.TerrainRenderer;
-import palecek.core.terrain.Terrain;
 import palecek.core.terrain.TerrainGenerator;
 import palecek.core.utils.Constants;
 import palecek.core.utils.ITexture;
@@ -27,7 +30,7 @@ import static org.lwjgl.opengl.GL42C.GL_SHADER_IMAGE_ACCESS_BARRIER_BIT;
 import static org.lwjgl.opengl.GL42C.glMemoryBarrier;
 
 
-public class HillaireScene implements ILogic {
+public class HillaireSmallPlanetScene implements ILogic {
     private final RenderManager renderManager;
     private final ObjectLoader objectLoader;
     private WindowManager windowManager;
@@ -41,19 +44,21 @@ public class HillaireScene implements ILogic {
     private TerrainGenerator terrainGenerator;
     private LogicManager logicManager;
     private HillariePrecompute hillariePrecompute;
+    private DirectionalLight directionalLight;
 
     private float speed = 0.0f;
 
     private Camera camera;
     Vector3f cameraInc;
 
-    public HillaireScene() {
+    public HillaireSmallPlanetScene() {
         renderManager = new RenderManager();
         objectLoader = new ObjectLoader();
         camera = new Camera();
         cameraInc = new Vector3f(0, 0, 0);
-        camera.setPosition(0, 1000, 0);
+        camera.setPosition(0, -6.36f, 10f);
         sceneManager = new SceneManager(0, camera);
+        directionalLight = new DirectionalLight(new Vector3f(1f,1f,1f), new Vector3f(1f,0,0f), 1.0f);
     }
 
     @Override
@@ -64,9 +69,9 @@ public class HillaireScene implements ILogic {
         imGuiLayer = new PauseMenu(windowManager.getWindow(), logicManager, () -> showGui = false);
 
         // Planet
-//        planetRenderer = new PlanetRenderer();
+        planetRenderer = new PlanetRenderer();
         windowManager.updateProjectionMatrix();
-        hillarieModel = new HillarieModel();
+        hillarieModel = HillarieModel.getSmallPlanet();
         Vector2i transmittanceSize = new Vector2i(256, 64);
         Vector2i scatteringSize = new Vector2i(32, 32);
         Vector2i skyViewSize = new Vector2i(200, 100);
@@ -82,22 +87,22 @@ public class HillaireScene implements ILogic {
 //        };
 
         // Terrain
-        terrainRenderer = new TerrainRenderer();
-        int[] lods = {8, 16};
-        short[] lodDistances = {8, 12};
-        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
+//        terrainRenderer = new TerrainRenderer();
+//        int[] lods = {8, 16};
+//        short[] lodDistances = {8, 12};
+//        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 
         HillariePostprocessModule hillariePostprocessModule = new HillariePostprocessModule(hillarieModel, textures, scatteringSize, transmittanceSize, skyViewSize, arialPerspectiveSize);
-        renderManager.init(List.of(hillariePostprocessModule), "hillaire", camera, terrainRenderer);
+        renderManager.init(List.of(hillariePostprocessModule), "hillaire_small_planet", camera, planetRenderer);
 
-//        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());
-//        planetGenerator.createPlanet(0, 0, -1000, 200f, 2f, 0f, new Vector2f(0, 0), 1f, sceneManager, Planet.PlanetType.TEMPERATE);
+        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());
+        planetGenerator.createPlanet(0, -6.36f, 0, 6.36f, 0f, 0f, new Vector2f(0, 0), 0f, sceneManager, Planet.PlanetType.TEMPERATE);
 
 
         // Light
         float lightIntensity = 1.0f;
-        Vector3f lightPosition = new Vector3f(1f, 0f, 1f);
+        Vector3f lightPosition = hillarieModel.getSunDirection();
         Vector3f lightColor = new Vector3f(1f, 1f, 1f);
         sceneManager.setDirectionalLight(new DirectionalLight(lightColor, lightPosition, lightIntensity));
     }
@@ -123,10 +128,14 @@ public class HillaireScene implements ILogic {
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_R.val)) {
             hillarieModel.rotateSun(-.01f, 0);
             hillariePrecompute.updateMultiScattering(hillarieModel);
+            directionalLight.setDirection(hillarieModel.getSunDirection());
+            sceneManager.setDirectionalLight(directionalLight);
         }
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_F.val)) {
             hillarieModel.rotateSun(.01f, 0);
             hillariePrecompute.updateMultiScattering(hillarieModel);
+            directionalLight.setDirection(hillarieModel.getSunDirection());
+            sceneManager.setDirectionalLight(directionalLight);
         }
         if (windowManager.isKeyTyped(GLFWEnum.GLFW_KEY_TAB.val)) {
             if (!showGui) {
@@ -137,9 +146,9 @@ public class HillaireScene implements ILogic {
             showGui = !showGui;
         }
         if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_LEFT_SHIFT.val)) {
-            speed = 0.1f;
+            speed = .0001f;
         } else {
-            speed = 0.05f;
+            speed = .00001f;
         }
     }
 
@@ -150,20 +159,20 @@ public class HillaireScene implements ILogic {
                 cameraInc.y * Constants.CAMERA_MOVEMENT_SPEED,
                 cameraInc.z * Constants.CAMERA_MOVEMENT_SPEED);
         Vector3f pos = camera.getPosition();
-        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
+//        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
         if (mouseInput.isRightButtonPressed()) {
             Vector2f rotVec = mouseInput.getDisplVec();
             camera.moveRotation(rotVec.x * Constants.MOUSE_SENSITIVITY, rotVec.y * Constants.MOUSE_SENSITIVITY, 0);
         }
 
-//        for (Planet planet : sceneManager.getPlanets()) {
-//            planetRenderer.processPlanet(planet);
-//        }
+        for (Planet planet : sceneManager.getPlanets()) {
+            planetRenderer.processPlanet(planet);
+        }
         hillariePrecompute.updateSkyAndFog(hillarieModel, camera);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-        for (Terrain terrain : sceneManager.getTerrains()) {
-            terrainRenderer.processTerrain(terrain);
-        }
+//        for (Terrain terrain : sceneManager.getTerrains()) {
+//            terrainRenderer.processTerrain(terrain);
+//        }
     }
 
     @Override

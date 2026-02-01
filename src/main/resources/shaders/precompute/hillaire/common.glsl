@@ -2,8 +2,8 @@
 #define NONLINEARSKYVIEWLUT 1
 #define ILLUMINANCE_IS_ONE 1
 #define PLANET_RADIUS_OFFSET 0.01f
-#define SHADOWMAP_ENABLED 0
-const float MultiScatteringLUTRes = 32.0; // nastavit z uniformu
+#define GU_TO_KM 1000f
+const float MultiScatteringLUTRes = 32.0;
 
 struct AtmosphereParameters {
     float BottomRadius;
@@ -120,8 +120,8 @@ void UvToSkyViewLutParams(AtmosphereParameters Atmosphere, out float viewZenithC
 
     float Vhorizon = sqrt(viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius);
     float CosBeta = Vhorizon / viewHeight;				// GroundToHorizonCos
-    float Beta = acos(CosBeta);
-    float ZenithHorizonAngle = PI - Beta;
+    float beta = acos(CosBeta);
+    float zenithHorizonAngle = PI - beta;
 
     if (uv.y < 0.5f)
     {
@@ -131,7 +131,7 @@ void UvToSkyViewLutParams(AtmosphereParameters Atmosphere, out float viewZenithC
         coord *= coord;
         #endif
         coord = 1.0 - coord;
-        viewZenithCosAngle = cos(ZenithHorizonAngle * coord);
+        viewZenithCosAngle = cos(zenithHorizonAngle * coord);
     }
     else
     {
@@ -139,7 +139,7 @@ void UvToSkyViewLutParams(AtmosphereParameters Atmosphere, out float viewZenithC
         #if NONLINEARSKYVIEWLUT
         coord *= coord;
         #endif
-        viewZenithCosAngle = cos(ZenithHorizonAngle + Beta * coord);
+        viewZenithCosAngle = cos(zenithHorizonAngle + beta * coord);
     }
 
     float coord = uv.x;
@@ -151,12 +151,12 @@ void SkyViewLutParamsToUv(AtmosphereParameters Atmosphere, in bool IntersectGrou
 {
     float Vhorizon = sqrt(viewHeight * viewHeight - Atmosphere.BottomRadius * Atmosphere.BottomRadius);
     float CosBeta = Vhorizon / viewHeight;				// GroundToHorizonCos
-    float Beta = acos(CosBeta);
-    float ZenithHorizonAngle = PI - Beta;
+    float beta = acos(CosBeta);
+    float zenithHorizonAngle = PI - beta;
 
     if (!IntersectGround)
     {
-        float coord = acos(viewZenithCosAngle) / ZenithHorizonAngle;
+        float coord = acos(viewZenithCosAngle) / zenithHorizonAngle;
         coord = 1.0 - coord;
         #if NONLINEARSKYVIEWLUT
         coord = sqrt(coord);
@@ -166,7 +166,7 @@ void SkyViewLutParamsToUv(AtmosphereParameters Atmosphere, in bool IntersectGrou
     }
     else
     {
-        float coord = (acos(viewZenithCosAngle) - ZenithHorizonAngle) / Beta;
+        float coord = (acos(viewZenithCosAngle) - zenithHorizonAngle) / beta;
         #if NONLINEARSKYVIEWLUT
         coord = sqrt(coord);
         #endif
@@ -365,25 +365,6 @@ vec3 GetMultipleScattering(AtmosphereParameters Atmosphere, vec3 scattering, vec
     return textureLod(multiScatteringTexture, uv, 0.0).rgb;
 }
 
-//float getShadow(in AtmosphereParameters Atmosphere, vec3 P)
-//{
-//    vec4 worldPosForShadow = vec4(P + vec3(0.0, 0.0, -Atmosphere.BottomRadius), 1.0);
-//
-//    vec4 shadowUv = shadowmapViewProjMat * worldPosForShadow;
-//
-//    shadowUv.xyz /= shadowUv.w;
-//
-//    shadowUv.x = shadowUv.x * 0.5 + 0.5;
-//    shadowUv.y = shadowUv.y * 0.5 + 0.5;
-//    shadowUv.z = shadowUv.z * 0.5 + 0.5;
-//
-//    if (all(greaterThanEqual(shadowUv.xyz, vec3(0.0))) && all(lessThan(shadowUv.xyz, vec3(1.0))))
-//    {
-//        return texture(u_ShadowmapTexture, shadowUv.xyz);
-//    }
-//    return 1.0;
-//}
-
 struct SingleScatteringResult
 {
     vec3 L;
@@ -543,9 +524,6 @@ in bool MieRayPhase, in float tMaxMax, vec2 resolution)
         #endif
 
         float shadow = 1.0f;
-        #if SHADOWMAP_ENABLED
-        shadow = getShadow(Atmosphere, P);
-        #endif
 
         vec3 S = globalL * (earthShadow * shadow * TransmittanceToSun * PhaseTimesScattering + multiScatteredLuminance * medium.scattering);
 

@@ -45,25 +45,21 @@ uniform DirectionalLight directionalLight;
 uniform PointLight pointLights[MAX_POINT_LIGHTS];
 uniform SpotLight spotLights[MAX_SPOT_LIGHTS];
 uniform sampler2D biomeMap;
+
 vec4 ambientC;
 vec4 diffuseC;
 vec4 specularC;
 const float cellSize = 0.01;
 
-float easeInOutQuint(float x)
-{
-    float inValue = 16.0 * x * x * x * x * x;
-    float outValue = 1.0 - pow(-2.0 * x + 2.0, 5.0) / 2.0;
-    return step(inValue , 0.5) * inValue + step(0.5,outValue) * outValue;
-}
-
 void setupColours(Material material, vec2 texCoords) {
     if (material.hasTexture == 0) {
-        ambientC = texture(biomeMap, texCoordOut+vec2(0, cellSize)) * 0.25f +
-        texture(biomeMap, texCoordOut+vec2(cellSize, 0)) * 0.25f + texture(biomeMap, texCoordOut+vec2(0, -cellSize)) * 0.25f +
-        texture(biomeMap, texCoordOut+vec2(-cellSize, 0)) * 0.25f;;
-        diffuseC = ambientC;
-        specularC = ambientC;
+        vec4 sampled = texture(biomeMap, texCoordOut+vec2(0, cellSize)) * 0.25f +
+        texture(biomeMap, texCoordOut+vec2(cellSize, 0)) * 0.25f +
+        texture(biomeMap, texCoordOut+vec2(0, -cellSize)) * 0.25f +
+        texture(biomeMap, texCoordOut+vec2(-cellSize, 0)) * 0.25f;
+        ambientC = sampled * 0.1;
+        diffuseC = sampled;
+        specularC = sampled;
     } else {
         ambientC = material.ambient;
         diffuseC = material.diffuse;
@@ -75,11 +71,11 @@ vec4 calcLightColor(vec3 lightColor, float lightIntensity, vec3 position, vec3 t
     vec4 diffuseColor = vec4(0);
     vec4 specularColor = vec4(0);
 
-    //diffuse
+    // Diffuse
     float diff = max(dot(normal, toLightDir), 0.0);
     diffuseColor = diffuseC * vec4(lightColor, 1.0) * lightIntensity * diff;
 
-    //specular
+    // Specular (Phong)
     vec3 cameraDir = normalize(-position);
     vec3 fromLightDir = -toLightDir;
     vec3 reflectedLight = normalize(reflect(fromLightDir, normal));
@@ -94,7 +90,6 @@ vec4 calcPointLight(PointLight light, vec3 normal, vec3 position) {
     vec3 toLightDir = normalize(lightDir);
     vec4 lightColor = calcLightColor(light.color, light.intensity, position, toLightDir, normal);
 
-    //attenuation
     float distance = length(lightDir);
     float attenuation = light.constant + light.linear * distance + light.exponent * distance * distance;
     return lightColor / attenuation;
@@ -103,8 +98,7 @@ vec4 calcPointLight(PointLight light, vec3 normal, vec3 position) {
 vec4 calcSpotLight(SpotLight light, vec3 normal, vec3 position) {
     vec3 lightDir = light.pl.position - position;
     vec3 toLightDir = normalize(lightDir);
-    vec3 fromLightDir = -toLightDir;
-    float spotAlfa = dot(toLightDir, normalize(light.coneDirection));
+    float spotAlfa = dot(toLightDir, normalize(-light.coneDirection));
 
     vec4 color = vec4(0);
     if (spotAlfa > light.cutOff) {
@@ -115,23 +109,33 @@ vec4 calcSpotLight(SpotLight light, vec3 normal, vec3 position) {
 }
 
 vec4 calcDirectionalLight(DirectionalLight light, vec3 normal, vec3 position) {
-    vec3 toLightDir = normalize(light.direction);
+    vec3 toLightDir = normalize(-light.direction);
     return calcLightColor(light.color, light.intensity, position, toLightDir, normal);
 }
 
 void main() {
     setupColours(material, fragTexCoord);
-    vec4 diffuseSpecularComp = calcDirectionalLight(directionalLight, fragNormal, fragPosition);
 
-    for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
-        if (pointLights[i].intensity > 0.0)
-        diffuseSpecularComp += calcPointLight(pointLights[i], fragNormal, fragPosition);
-    }
+    // FIX: Normals must be re-normalized in the fragment shader
+    vec3 normal = normalize(fragNormal);
 
-    for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
-        if (spotLights[i].pl.intensity > 0.0)
-        diffuseSpecularComp += calcSpotLight(spotLights[i], fragNormal, fragPosition);
-    }
+    // FIX: Start with Ambient, then ADD other lights
+    vec4 totalLight = ambientC*0.01;
 
-    fragColor = vec4(ambientC.xyz, 1) * vec4(vec3(ambientC.w), 1.0) + diffuseSpecularComp;
+    // Directional Light
+    totalLight += calcDirectionalLight(directionalLight, normal, fragPosition);
+
+//    // Point Lights
+//    for(int i = 0; i < MAX_POINT_LIGHTS; i++) {
+//        if (pointLights[i].intensity > 0.0)
+//        totalLight += calcPointLight(pointLights[i], normal, fragPosition);
+//    }
+//
+//    // Spot Lights
+//    for(int i = 0; i < MAX_SPOT_LIGHTS; i++) {
+//        if (spotLights[i].pl.intensity > 0.0)
+//        totalLight += calcSpotLight(spotLights[i], normal, fragPosition);
+//    }
+
+    fragColor = totalLight;
 }

@@ -17,6 +17,7 @@ uniform vec2 RayMarchMinMaxSPP;
 uniform vec3 sunIlluminance;
 uniform vec3 sunDirection;
 uniform vec3 camera;
+uniform bool isSmall;
 
 #define MULTISCATAPPROX_ENABLED 1
 const bool RENDER_SUN_DISK = true;
@@ -27,6 +28,9 @@ uniform AtmosphereParameters uAtmosphere;
 #define AP_KM_PER_SLICE 4.0
 
 float AerialPerspectiveSliceToDepth(float slice) {
+    if(isSmall) {
+        return slice * AP_KM_PER_SLICE * 1000.0;
+    }
     return slice * AP_KM_PER_SLICE;
 }
 
@@ -43,7 +47,12 @@ void main() {
     vec2 pixPos = vec2(texelCoord.xy) + 0.5;
     float zIdx = float(texelCoord.z);
     vec2 uv = pixPos / vec2(uAerialPerspectiveTextureSize.xy);
-    vec3 camPosKM = camera * 0.001;
+    vec3 camPosKM;
+    if (isSmall) {
+        camPosKM = camera * GU_TO_KM;
+    } else {
+        camPosKM = camera * 0.001;
+    }
 
     vec3 ClipSpace = vec3(uv * vec2(2.0, 2.0) - vec2(1.0, 1.0), 1.0);
     vec4 HViewPos = projMatInv * vec4(ClipSpace, 1.0);
