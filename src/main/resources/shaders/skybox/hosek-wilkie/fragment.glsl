@@ -43,7 +43,6 @@ void main() {
 
 
     // Additional sun disc and glow
-    //todo maybe remove
     float sunCosAngle = dot(normalize(vViewDir), normalize(sunDir));
     sunCosAngle = clamp(sunCosAngle, -1.0, 1.0);
     float sunAngle = acos(sunCosAngle);

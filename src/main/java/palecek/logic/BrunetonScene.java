@@ -47,7 +47,7 @@ public class BrunetonScene implements ILogic {
         objectLoader = new ObjectLoader();
         camera = new Camera();
         cameraInc = new Vector3f(0, 0, 0);
-        camera.setPosition(0, 10, 0);
+        camera.setPosition(0, 1000, 0);
         sceneManager = new SceneManager(-90, camera);
     }
 
@@ -77,14 +77,14 @@ public class BrunetonScene implements ILogic {
 //        };
 
         // Terrain
-        terrainRenderer = new TerrainRenderer();
-        int[] lods = {8, 16};
-        short[] lodDistances = {8, 12};
-        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
+//        terrainRenderer = new TerrainRenderer();
+//        int[] lods = {8, 16};
+//        short[] lodDistances = {8, 12};
+//        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 
         BrunetonPostprocessModule brunetonPostprocessModule = new BrunetonPostprocessModule(brunetonModel, textures, scatteringSize, transmittanceSize, irradianceSize);
-        renderManager.init(List.of(brunetonPostprocessModule), "bruneton", camera, terrainRenderer);
+        renderManager.init(List.of(brunetonPostprocessModule), "bruneton", camera);
 
 //        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());
 //        planetGenerator.createPlanet(0, 0, -1000, 200f, 2f, 0f, new Vector2f(0, 0), 1f, sceneManager, Planet.PlanetType.TEMPERATE);
@@ -134,6 +134,9 @@ public class BrunetonScene implements ILogic {
         } else {
             speed = 0.05f;
         }
+        if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_P.val)) {
+            ImageUtils.saveImage(1920, 1000);
+        }
     }
 
 
@@ -142,8 +145,8 @@ public class BrunetonScene implements ILogic {
         camera.movePosition(cameraInc.x * Constants.CAMERA_MOVEMENT_SPEED,
                 cameraInc.y * Constants.CAMERA_MOVEMENT_SPEED,
                 cameraInc.z * Constants.CAMERA_MOVEMENT_SPEED);
-        Vector3f pos = camera.getPosition();
-        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
+//        Vector3f pos = camera.getPosition();
+//        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
         if (mouseInput.isRightButtonPressed()) {
             Vector2f rotVec = mouseInput.getDisplVec();
             camera.moveRotation(rotVec.x * Constants.MOUSE_SENSITIVITY, rotVec.y * Constants.MOUSE_SENSITIVITY, 0);
@@ -152,9 +155,9 @@ public class BrunetonScene implements ILogic {
 //        for (Planet planet : sceneManager.getPlanets()) {
 //            planetRenderer.processPlanet(planet);
 //        }
-        for (Terrain terrain : sceneManager.getTerrains()) {
-            terrainRenderer.processTerrain(terrain);
-        }
+//        for (Terrain terrain : sceneManager.getTerrains()) {
+//            terrainRenderer.processTerrain(terrain);
+//        }
     }
 
     @Override

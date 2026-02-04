@@ -14,6 +14,7 @@ import palecek.core.terrain.Terrain;
 import palecek.core.terrain.TerrainGenerator;
 import palecek.core.utils.Constants;
 import palecek.core.utils.ITexture;
+import palecek.core.utils.ImageUtils;
 import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
 import palecek.gui.PauseMenu;
@@ -63,8 +64,6 @@ public class HillaireScene implements ILogic {
         showGui = false;
         imGuiLayer = new PauseMenu(windowManager.getWindow(), logicManager, () -> showGui = false);
 
-        // Planet
-//        planetRenderer = new PlanetRenderer();
         windowManager.updateProjectionMatrix();
         hillarieModel = new HillarieModel();
         Vector2i transmittanceSize = new Vector2i(256, 64);
@@ -82,14 +81,14 @@ public class HillaireScene implements ILogic {
 //        };
 
         // Terrain
-        terrainRenderer = new TerrainRenderer();
-        int[] lods = {8, 16};
-        short[] lodDistances = {8, 12};
-        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
+//        terrainRenderer = new TerrainRenderer();
+//        int[] lods = {8, 16};
+//        short[] lodDistances = {8, 12};
+//        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 
         HillariePostprocessModule hillariePostprocessModule = new HillariePostprocessModule(hillarieModel, textures, scatteringSize, transmittanceSize, skyViewSize, arialPerspectiveSize);
-        renderManager.init(List.of(hillariePostprocessModule), "hillaire", camera, terrainRenderer);
+        renderManager.init(List.of(hillariePostprocessModule), "hillaire", camera);
 
 //        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());
 //        planetGenerator.createPlanet(0, 0, -1000, 200f, 2f, 0f, new Vector2f(0, 0), 1f, sceneManager, Planet.PlanetType.TEMPERATE);
@@ -141,6 +140,9 @@ public class HillaireScene implements ILogic {
         } else {
             speed = 0.05f;
         }
+        if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_P.val)) {
+            ImageUtils.saveImage(1920, 1000);
+        }
     }
 
 
@@ -149,8 +151,8 @@ public class HillaireScene implements ILogic {
         camera.movePosition(cameraInc.x * Constants.CAMERA_MOVEMENT_SPEED,
                 cameraInc.y * Constants.CAMERA_MOVEMENT_SPEED,
                 cameraInc.z * Constants.CAMERA_MOVEMENT_SPEED);
-        Vector3f pos = camera.getPosition();
-        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
+//        Vector3f pos = camera.getPosition();
+//        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
         if (mouseInput.isRightButtonPressed()) {
             Vector2f rotVec = mouseInput.getDisplVec();
             camera.moveRotation(rotVec.x * Constants.MOUSE_SENSITIVITY, rotVec.y * Constants.MOUSE_SENSITIVITY, 0);
@@ -161,9 +163,9 @@ public class HillaireScene implements ILogic {
 //        }
         hillariePrecompute.updateSkyAndFog(hillarieModel, camera);
         glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-        for (Terrain terrain : sceneManager.getTerrains()) {
-            terrainRenderer.processTerrain(terrain);
-        }
+//        for (Terrain terrain : sceneManager.getTerrains()) {
+//            terrainRenderer.processTerrain(terrain);
+//        }
     }
 
     @Override

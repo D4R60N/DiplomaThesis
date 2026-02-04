@@ -15,6 +15,7 @@ import palecek.core.skybox.SkyboxTexture;
 import palecek.core.terrain.Terrain;
 import palecek.core.terrain.TerrainGenerator;
 import palecek.core.utils.Constants;
+import palecek.core.utils.ImageUtils;
 import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
 import palecek.gui.PauseMenu;
@@ -58,10 +59,10 @@ public class PreethamScene implements ILogic {
         showGui = false;
         imGuiLayer = new PauseMenu(windowManager.getWindow(), logicManager, () -> showGui = false);
         // Terrain
-        terrainRenderer = new TerrainRenderer();
-        int[] lods = {8, 16};
-        short[] lodDistances = {8, 12};
-        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
+//        terrainRenderer = new TerrainRenderer();
+//        int[] lods = {8, 16};
+//        short[] lodDistances = {8, 12};
+//        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 //         Skybox
         Skybox skybox = new Skybox(null, objectLoader, 8, 16);
@@ -93,7 +94,7 @@ public class PreethamScene implements ILogic {
         skyboxRenderer = new SkyboxRenderer(skybox, "preetham", List.of(new PreethamSkyboxModule(camera, preetham)));
 
 //         renderManager init
-        renderManager.init(camera, terrainRenderer, skyboxRenderer);
+        renderManager.init(camera, skyboxRenderer);
 
         // Light
         float lightIntensity = 1.0f;
@@ -140,6 +141,9 @@ public class PreethamScene implements ILogic {
         } else {
             speed = 0.05f;
         }
+        if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_P.val)) {
+            ImageUtils.saveImage(1920, 1000);
+        }
     }
 
     @Override
@@ -148,8 +152,8 @@ public class PreethamScene implements ILogic {
                 cameraInc.y * Constants.CAMERA_MOVEMENT_SPEED,
                 cameraInc.z * Constants.CAMERA_MOVEMENT_SPEED);
 
-        Vector3f pos = camera.getPosition();
-        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
+//        Vector3f pos = camera.getPosition();
+//        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
 
 
         if (mouseInput.isRightButtonPressed()) {
@@ -157,9 +161,9 @@ public class PreethamScene implements ILogic {
             camera.moveRotation(rotVec.x * Constants.MOUSE_SENSITIVITY, rotVec.y * Constants.MOUSE_SENSITIVITY, 0);
         }
 
-        for (Terrain terrain : sceneManager.getTerrains()) {
-            terrainRenderer.processTerrain(terrain);
-        }
+//        for (Terrain terrain : sceneManager.getTerrains()) {
+//            terrainRenderer.processTerrain(terrain);
+//        }
     }
 
     @Override

@@ -13,10 +13,9 @@ import palecek.core.planet.Planet;
 import palecek.core.planet.PlanetGenerator;
 import palecek.core.rendering.PlanetRenderer;
 import palecek.core.rendering.RenderManager;
-import palecek.core.rendering.TerrainRenderer;
-import palecek.core.terrain.TerrainGenerator;
 import palecek.core.utils.Constants;
 import palecek.core.utils.ITexture;
+import palecek.core.utils.ImageUtils;
 import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
 import palecek.gui.PauseMenu;
@@ -40,8 +39,6 @@ public class HillaireSmallPlanetScene implements ILogic {
     private HillarieModel hillarieModel;
     private ImGuiLayer imGuiLayer;
     private boolean showGui;
-    private TerrainRenderer terrainRenderer;
-    private TerrainGenerator terrainGenerator;
     private LogicManager logicManager;
     private HillariePrecompute hillariePrecompute;
     private DirectionalLight directionalLight;
@@ -56,7 +53,7 @@ public class HillaireSmallPlanetScene implements ILogic {
         objectLoader = new ObjectLoader();
         camera = new Camera();
         cameraInc = new Vector3f(0, 0, 0);
-        camera.setPosition(0, -6.36f, 10f);
+        camera.setPosition(10f, -6.36f, 0f);
         sceneManager = new SceneManager(0, camera);
         directionalLight = new DirectionalLight(new Vector3f(1f,1f,1f), new Vector3f(1f,0,0f), 1.0f);
     }
@@ -149,6 +146,9 @@ public class HillaireSmallPlanetScene implements ILogic {
             speed = .0001f;
         } else {
             speed = .00001f;
+        }
+        if (windowManager.isKeyPressed(GLFWEnum.GLFW_KEY_P.val)) {
+            ImageUtils.saveImage(1920, 1000);
         }
     }
 

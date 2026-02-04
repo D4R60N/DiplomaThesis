@@ -1,11 +1,17 @@
 plugins {
     id("java")
+    id("application")
+    id("com.github.johnrengelman.shadow") version "8.1.1"
 }
 
 group = "palecek"
 version = "1.0-SNAPSHOT"
 var imguiVersion = "1.90.0"
 val lwjglVersion = "3.3.3"
+
+application {
+    mainClass.set("palecek.Main")
+}
 
 repositories {
     mavenLocal()
@@ -31,4 +37,7 @@ dependencies {
 
 tasks.test {
     useJUnitPlatform()
+}
+tasks.withType<com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar> {
+    archiveClassifier.set("all")
 }

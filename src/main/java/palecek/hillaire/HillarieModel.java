@@ -36,10 +36,10 @@ public class HillarieModel {
         this.rayleighDensityExpScale = -1.0f / 8.0f;
         this.rayleighScattering = new Vector3f(0.005802f, 0.013558f, 0.033100f);
         this.mieDensityExpScale = -1.0f / 1.2f;
-        this.mieScattering = new Vector3f(0.003996f, 0.003996f, 0.003996f);
-        this.mieExtinction = new Vector3f(0.004440f, 0.004440f, 0.004440f);
-        this.mieAbsorption = new Vector3f(0.000444f, 0.000444f, 0.000444f); // Example value
-        this.miePhaseG = 0.08f;
+        this.mieScattering = new Vector3f(0.003996f, 0.003996f, 0.003996f).mul(4.0f);
+        this.mieAbsorption = new Vector3f(0.004440f).mul(0.5f);
+        this.mieExtinction = new Vector3f(mieScattering).add(mieAbsorption);
+        this.miePhaseG = 0.8f;
         this.absorptionDensity0LayerWidth = 25.0f;
         this.absorptionDensity0ConstantTerm = -2.0f / 3.0f;
         this.absorptionDensity0LinearTerm = 1.0f / 15.0f;

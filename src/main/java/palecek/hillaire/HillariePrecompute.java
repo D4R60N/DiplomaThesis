@@ -28,7 +28,7 @@ public class HillariePrecompute {
     private final Vector3i aerialPerspectiveSize;
     private final int skyViewGroupsX, skyViewGroupsY, aerialPerspectiveGroupsX, aerialPerspectiveGroupsY, aerialPerspectiveGroupsZ;
     private final ComputeShaderManager transmittanceComputeShaderManager, multiScatteringComputeShaderManager, skyViewComputeShaderManager, aerialPerspectiveComputeShaderManager;
-
+    public static long startTime;
     public HillariePrecompute(Vector2i transmittanceSize, Vector2i scatteringSize, Vector2i skyViewSize, Vector3i aerialPerspectiveSize) {
         transmittanceMap = new Texture(transmittanceSize.x, transmittanceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
         multipleScatteringMap = new Texture(scatteringSize.x, scatteringSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
@@ -55,6 +55,7 @@ public class HillariePrecompute {
     }
 
     public ITexture[] precompute(HillarieModel model, Camera camera) throws Exception {
+        startTime = System.nanoTime();
         int groupsX = (int) Math.ceil((double) transmittanceSize.x / 8);
         int groupsY = (int) Math.ceil((double) transmittanceSize.y / 8);
 
@@ -95,16 +96,16 @@ public class HillariePrecompute {
         transmittanceComputeShaderManager.unbind();
 
         //----------------------- Save Transmittance -----------------------//
-        RawTextureExporter.saveTexture2DFloat(
-                transmittanceMap,
-                transmittanceSize.x,
-                transmittanceSize.y,
-                "images/hillaire/transmittance.dat"
-        );
-
-        TextureExporter.saveHDRTextureToPNG(
-                transmittanceMap, transmittanceSize.x, transmittanceSize.y, "images/hillaire/transmittance.png", 1f
-        );
+//        RawTextureExporter.saveTexture2DFloat(
+//                transmittanceMap,
+//                transmittanceSize.x,
+//                transmittanceSize.y,
+//                "images/hillaire/transmittance.dat"
+//        );
+//
+//        TextureExporter.saveHDRTextureToPNG(
+//                transmittanceMap, transmittanceSize.x, transmittanceSize.y, "images/hillaire/transmittance.png", 1f
+//        );
 
         //----------------------- Multiple Scattering -----------------------//
 
@@ -113,16 +114,16 @@ public class HillariePrecompute {
         precomputeMultiScattering(multiScatteringComputeShaderManager, model);
 
         //----------------------- Save Multiple Scattering -----------------------//
-        RawTextureExporter.saveTexture2DFloat(
-                multipleScatteringMap,
-                scatteringSize.x,
-                scatteringSize.y,
-                "images/hillaire/multiple_scattering.dat"
-        );
-
-        TextureExporter.saveHDRTextureToPNG(
-                multipleScatteringMap, scatteringSize.x, scatteringSize.y, "images/hillaire/multiple_scattering.png", 1f
-        );
+//        RawTextureExporter.saveTexture2DFloat(
+//                multipleScatteringMap,
+//                scatteringSize.x,
+//                scatteringSize.y,
+//                "images/hillaire/multiple_scattering.dat"
+//        );
+//
+//        TextureExporter.saveHDRTextureToPNG(
+//                multipleScatteringMap, scatteringSize.x, scatteringSize.y, "images/hillaire/multiple_scattering.png", 1f
+//        );
 
         //----------------------- Sky View -----------------------//
 
@@ -131,16 +132,16 @@ public class HillariePrecompute {
         precomputeSkyView(skyViewComputeShaderManager, model, camera);
 
         //----------------------- Save Sky View -----------------------//
-        RawTextureExporter.saveTexture2DFloat(
-                skyViewMap,
-                skyViewSize.x,
-                skyViewSize.y,
-                "images/hillaire/sky_view.dat"
-        );
-
-        TextureExporter.saveHDRTextureToPNG(
-                skyViewMap, skyViewSize.x, skyViewSize.y, "images/hillaire/sky_view.png", 1f
-        );
+//        RawTextureExporter.saveTexture2DFloat(
+//                skyViewMap,
+//                skyViewSize.x,
+//                skyViewSize.y,
+//                "images/hillaire/sky_view.dat"
+//        );
+//
+//        TextureExporter.saveHDRTextureToPNG(
+//                skyViewMap, skyViewSize.x, skyViewSize.y, "images/hillaire/sky_view.png", 1f
+//        );
 
         //----------------------- Arial Perspective -----------------------//
 
@@ -149,18 +150,21 @@ public class HillariePrecompute {
         precomputeAerialPerspective(aerialPerspectiveComputeShaderManager, model, camera);
 
         //----------------------- Save Arial Perspective -----------------------//
-        RawTextureExporter.saveTexture3DFloat(
-                aerialPerspectiveMap,
-                aerialPerspectiveSize.x,
-                aerialPerspectiveSize.y,
-                aerialPerspectiveSize.z,
-                "images/hillaire/aerial_perspective.dat"
-        );
+//        RawTextureExporter.saveTexture3DFloat(
+//                aerialPerspectiveMap,
+//                aerialPerspectiveSize.x,
+//                aerialPerspectiveSize.y,
+//                aerialPerspectiveSize.z,
+//                "images/hillaire/aerial_perspective.dat"
+//        );
 
-        TextureExporter.saveHDRTexture3DToPNG(
-                aerialPerspectiveMap, aerialPerspectiveSize.x, aerialPerspectiveSize.y, aerialPerspectiveSize.z, "images/hillaire/aerial_perspective/aerial_perspective", 1f, TextureExporter.SliceDimension.Z
-        );
+//        TextureExporter.saveHDRTexture3DToPNG(
+//                aerialPerspectiveMap, aerialPerspectiveSize.x, aerialPerspectiveSize.y, aerialPerspectiveSize.z, "images/hillaire/aerial_perspective/aerial_perspective", 1f, TextureExporter.SliceDimension.Z
+//        );
+        long endTime = System.nanoTime();
+        double ttffMs = (endTime - startTime) / 1_000_000.0;
 
+        System.out.println("Time to First Frame: " + ttffMs + " ms");
         return new ITexture[]{transmittanceMap, multipleScatteringMap, skyViewMap, aerialPerspectiveMap};
     }
     public void initMultiScattering(ComputeShaderManager computeShaderManager, HillarieModel model) throws Exception {

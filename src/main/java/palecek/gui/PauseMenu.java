@@ -47,32 +47,32 @@ public class PauseMenu extends ImGuiLayer {
         ImGui.begin("Main Menu", windowFlags);
 
 
-        if (centeredButton("Preetham", 100, 30)) {
+        if (centeredButton("Preetham", 200, 30)) {
             logicManager.switchToLogic(1);
             closeCallback.execute();
         }
 
-        if (centeredButton("Hosek Wilkie", 100, 30)) {
+        if (centeredButton("Hosek Wilkie", 200, 30)) {
             logicManager.switchToLogic(2);
             closeCallback.execute();
         }
 
-        if (centeredButton("Bruneton", 100, 30)) {
+        if (centeredButton("Bruneton", 200, 30)) {
             logicManager.switchToLogic(3);
             closeCallback.execute();
         }
 
-        if (centeredButton("Hillaire", 100, 30)) {
+        if (centeredButton("Hillaire", 200, 30)) {
             logicManager.switchToLogic(4);
             closeCallback.execute();
         }
 
-        if (centeredButton("Hillaire Small Planet", 100, 30)) {
+        if (centeredButton("Hillaire Small Planet", 200, 30)) {
             logicManager.switchToLogic(5);
             closeCallback.execute();
         }
 
-        if (centeredButton("Main Menu", 100, 30)) {
+        if (centeredButton("Main Menu", 200, 30)) {
             logicManager.switchToLogic(0);
             closeCallback.execute();
         }
@@ -85,7 +85,7 @@ public class PauseMenu extends ImGuiLayer {
     private boolean centeredButton(String label, float width, float height) {
         float windowWidth = ImGui.getWindowSizeX();
         float cursorX = (windowWidth - width) / 2.0f;
-        float cursorY = (windowHeight - height) / 6.0f;
+        float cursorY = (windowHeight - height) / 12.0f;
 
         ImGui.setCursorPosX(cursorX);
         ImGui.setCursorPosY(cursorY + ImGui.getCursorPosY());

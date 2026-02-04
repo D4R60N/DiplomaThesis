@@ -33,8 +33,8 @@ public class BrunetonModel {
     public BrunetonModel() {
         this.solarIrradiance = new Vector3f(1.474f, 1.8504f, 2.1229f);
         this.sunAngularRadius = 0.004675f;
-        this.bottomRadius = 1;
-        this.topRadius = 2;
+        this.bottomRadius = 6360.0f;
+        this.topRadius = 6420.0f;
         this.groundAlbedo = new Vector3f(0.1f, 0.1f, 0.1f);
         this.muSMin = -0.207912f;
 
@@ -67,7 +67,11 @@ public class BrunetonModel {
         this.sunSize = new Vector2f((float) Math.tan(sunAngularRadius), (float) Math.cos(sunAngularRadius));
     }
 
-    public Vector3f calculateSunPosition(float azimuth, float zenith) {
+    public Vector3f calculateSunPosition() {
+        return calculateSunPosition(sunAzimuth, sunZenith);
+    }
+
+    public static Vector3f calculateSunPosition(float azimuth, float zenith) {
         float x = (float)(Math.sin(zenith) * Math.sin(azimuth));
         float y = (float)(Math.cos(zenith));
         float z = (float)(Math.sin(zenith) * Math.cos(azimuth));
@@ -75,9 +79,12 @@ public class BrunetonModel {
     }
 
     public void rotateSun(float incZenith, float incAzimuth) {
+        if (Math.cos(sunZenith + incZenith) < 0) {
+            return;
+        }
         sunZenith += incZenith;
         sunAzimuth += incAzimuth;
-        sunDirection = calculateSunPosition(sunAzimuth, sunZenith);
+        sunDirection = calculateSunPosition();
     }
 
     public BrunetonModel(Vector3f solarIrradiance, float sunAngularRadius, float bottomRadius, float topRadius, DensityProfile[] rayleighDensity, Vector3f rayleighScattering, DensityProfile[] mieDensity, Vector3f mieScattering, Vector3f mieExtinction, float miePhaseFunctionG, DensityProfile[] absorptionDensity, Vector3f absorptionExtinction, Vector3f groundAlbedo, float muSMin) {

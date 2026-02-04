@@ -54,7 +54,6 @@ void main() {
     vec3 linearRGB = CIEtoRGB * vec3(X, Y, Zc);
 
     // Additional sun disc and glow
-    //todo maybe removeew
     float sunCosAngle = dot(normalize(vViewDir), normalize(sunDir));
     sunCosAngle = clamp(sunCosAngle, -1.0, 1.0);
     float sunAngle = acos(sunCosAngle);
@@ -65,8 +64,11 @@ void main() {
 
     linearRGB = max(linearRGB, 0.0) + (sunColor * (sunDisc + 0.2 * glow));
 
+    float exposure = 0.1;
+    vec3 mapped = vec3(1.0) - exp(-linearRGB * exposure);
 
-    vec3 rgb = pow(linearRGB, vec3(1.0 / 2.2));
+
+    vec3 rgb = pow(mapped, vec3(1.0 / 2.2));
     rgb = max(rgb, vec3(0.0));
 
     FragColor = vec4(rgb, 1.0);
