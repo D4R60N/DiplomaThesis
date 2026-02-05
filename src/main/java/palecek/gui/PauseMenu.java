@@ -5,7 +5,9 @@ import imgui.flag.ImGuiCond;
 
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
+import palecek.Main;
 import palecek.core.LogicManager;
+import palecek.core.WindowManager;
 import palecek.core.gui.ImGuiLayer;
 
 public class PauseMenu extends ImGuiLayer {
@@ -23,11 +25,21 @@ public class PauseMenu extends ImGuiLayer {
 
     private LogicManager logicManager;
     private CloseCallback closeCallback;
+    private IAddedWindow addedWindow;
 
+    public PauseMenu(long window, LogicManager logicManager, CloseCallback closeCallback, IAddedWindow addedWindow) {
+        super(window);
+        this.logicManager = logicManager;
+        this.closeCallback = closeCallback;
+        this.addedWindow = addedWindow;
+    }
     public PauseMenu(long window, LogicManager logicManager, CloseCallback closeCallback) {
         super(window);
         this.logicManager = logicManager;
         this.closeCallback = closeCallback;
+        this.addedWindow = (windowWidth, windowHeight) -> {;
+            // No additional window
+        };
     }
 
     @Override
@@ -76,6 +88,21 @@ public class PauseMenu extends ImGuiLayer {
             logicManager.switchToLogic(0);
             closeCallback.execute();
         }
+
+        ImGui.popStyleVar(2);
+        ImGui.end();
+
+        ImGui.setNextWindowPos(0, 0, ImGuiCond.Always);
+        ImGui.setNextWindowSize(400, Main.getWindowManager().getHeight(), ImGuiCond.Always);
+        ImGui.pushStyleVar(ImGuiStyleVar.FrameRounding, 8f);
+        ImGui.pushStyleVar(ImGuiStyleVar.FramePadding, 12f, 8f);
+
+
+        ImGui.begin("Params", windowFlags);
+        ImGui.setCursorPosX(10);
+        ImGui.setCursorPosY(10);
+
+        addedWindow.setup(windowWidth, windowHeight);
 
 
         ImGui.popStyleVar(2);

@@ -1,5 +1,6 @@
 package palecek.logic;
 
+import imgui.type.ImFloat;
 import org.joml.Vector2f;
 import org.joml.Vector3f;
 import palecek.Main;
@@ -18,6 +19,7 @@ import palecek.core.utils.Constants;
 import palecek.core.utils.ImageUtils;
 import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
+import palecek.gui.IAddedWindow;
 import palecek.gui.PauseMenu;
 import palecek.preetham.PreethamModel;
 import palecek.preetham.PreethamSkyboxModule;
@@ -57,12 +59,11 @@ public class PreethamScene implements ILogic {
         windowManager = Main.getWindowManager();
         logicManager = Main.getLogicManager();
         showGui = false;
-        imGuiLayer = new PauseMenu(windowManager.getWindow(), logicManager, () -> showGui = false);
         // Terrain
-//        terrainRenderer = new TerrainRenderer();
-//        int[] lods = {8, 16};
-//        short[] lodDistances = {8, 12};
-//        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
+        terrainRenderer = new TerrainRenderer();
+        int[] lods = {8, 16};
+        short[] lodDistances = {8, 12};
+        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 //         Skybox
         Skybox skybox = new Skybox(null, objectLoader, 8, 16);
@@ -88,13 +89,39 @@ public class PreethamScene implements ILogic {
                 (float)Math.toRadians(0.266),
                 (float)Math.toRadians(1.0),
                 T,
-                sunAngle
+                sunAngle,
+                .2f
         );
         preethamModel = preetham;
         skyboxRenderer = new SkyboxRenderer(skybox, "preetham", List.of(new PreethamSkyboxModule(camera, preetham)));
 
 //         renderManager init
-        renderManager.init(camera, skyboxRenderer);
+        renderManager.init(camera, skyboxRenderer, terrainRenderer);
+        float[] valE = new float[]{preethamModel.getExposure()};
+        float[] valT = new float[]{preethamModel.getTurbidity()};
+        float[] valAR = new float[]{preethamModel.getSunAngularRadius()};
+        float[] valGR = new float[]{preethamModel.getGlowRadius()};
+        float[] valC = new float[]{preethamModel.getSunColor().x, preethamModel.getSunColor().y, preethamModel.getSunColor().z};
+
+        imGuiLayer = new PauseMenu(windowManager.getWindow(), logicManager, () -> showGui = false, (w, h) -> {
+
+            if (IAddedWindow.centeredSlider("Exposure", valE, 0.0f, 2.0f, 200f, w,h)) {
+                preethamModel.setExposure(valE[0]);
+            }
+            if (IAddedWindow.centeredSlider("Turbidity", valT, 1.0f, 10.0f, 200f, w,h)) {
+                preethamModel.setTurbidity(valT[0]);
+                preethamModel.recomputeZenith();
+            }
+            if (IAddedWindow.centeredSlider("Sun Angular Radius", valAR, 0.0f, 1.0f, 200f, w,h)) {
+                preethamModel.setSunAngularRadius(valAR[0]);
+            }
+            if (IAddedWindow.centeredSlider("Glow Radius", valGR, 0.0f, 5.0f, 200f, w,h)) {
+                preethamModel.setGlowRadius(valGR[0]);
+            }
+            if (IAddedWindow.centeredVector3("Sun Color", valC, 0.0f, 1.0f, 200f, w, h)) {
+                preethamModel.setSunColor(new Vector3f(valC[0], valC[1], valC[2]));
+            }
+        });
 
         // Light
         float lightIntensity = 1.0f;
@@ -152,8 +179,8 @@ public class PreethamScene implements ILogic {
                 cameraInc.y * Constants.CAMERA_MOVEMENT_SPEED,
                 cameraInc.z * Constants.CAMERA_MOVEMENT_SPEED);
 
-//        Vector3f pos = camera.getPosition();
-//        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
+        Vector3f pos = camera.getPosition();
+        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
 
 
         if (mouseInput.isRightButtonPressed()) {
@@ -161,9 +188,9 @@ public class PreethamScene implements ILogic {
             camera.moveRotation(rotVec.x * Constants.MOUSE_SENSITIVITY, rotVec.y * Constants.MOUSE_SENSITIVITY, 0);
         }
 
-//        for (Terrain terrain : sceneManager.getTerrains()) {
-//            terrainRenderer.processTerrain(terrain);
-//        }
+        for (Terrain terrain : sceneManager.getTerrains()) {
+            terrainRenderer.processTerrain(terrain);
+        }
     }
 
     @Override

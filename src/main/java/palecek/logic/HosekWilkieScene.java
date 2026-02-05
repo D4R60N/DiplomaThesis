@@ -18,6 +18,7 @@ import palecek.core.utils.Constants;
 import palecek.core.utils.ImageUtils;
 import palecek.core.utils.RenderMode;
 import palecek.core.utils.glfw.GLFWEnum;
+import palecek.gui.IAddedWindow;
 import palecek.gui.PauseMenu;
 import palecek.hosekWilkie.HosekWilkieModel;
 import palecek.hosekWilkie.HosekWilkieSkyboxModule;
@@ -57,13 +58,12 @@ public class HosekWilkieScene implements ILogic {
         windowManager = Main.getWindowManager();
         logicManager = Main.getLogicManager();
         showGui = false;
-        imGuiLayer = new PauseMenu(windowManager.getWindow(), logicManager, () -> showGui = false);
 
 //        // Terrain
-//        terrainRenderer = new TerrainRenderer();
-//        int[] lods = {8, 16};
-//        short[] lodDistances = {8, 12};
-//        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
+        terrainRenderer = new TerrainRenderer();
+        int[] lods = {8, 16};
+        short[] lodDistances = {8, 12};
+        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 //         Skybox
         Skybox skybox = new Skybox(null, objectLoader, 8, 16);
@@ -77,13 +77,45 @@ public class HosekWilkieScene implements ILogic {
                 (float)Math.toRadians(0.66),
                 (float)Math.toRadians(2.0),
                 T,
-                A
+                A,
+                .2f
         );
         hosekWilkieModel = hosekWilkie;
         skyboxRenderer = new SkyboxRenderer(skybox, "hosek-wilkie", List.of(new HosekWilkieSkyboxModule(camera, hosekWilkie)));
 
 //         renderManager init
-        renderManager.init(camera, skyboxRenderer);
+        renderManager.init(camera, skyboxRenderer, terrainRenderer);
+        float[] valE = new float[]{hosekWilkieModel.getExposure()};
+        float[] valT = new float[]{hosekWilkieModel.getTurbidity()};
+        float[] valA = new float[]{hosekWilkieModel.getAlbedo()};
+        float[] valAR = new float[]{hosekWilkieModel.getSunAngularRadius()};
+        float[] valGR = new float[]{hosekWilkieModel.getGlowRadius()};
+        float[] valC = new float[]{hosekWilkieModel.getSunColor().x, hosekWilkieModel.getSunColor().y, hosekWilkieModel.getSunColor().z};
+
+        imGuiLayer = new PauseMenu(windowManager.getWindow(), logicManager, () -> showGui = false, (w, h) -> {
+
+
+            if (IAddedWindow.centeredSlider("Exposure", valE, 0.0f, 2.0f, 200f, w,h)) {
+                hosekWilkieModel.setExposure(valE[0]);
+            }
+            if (IAddedWindow.centeredSlider("Turbidity", valT, 1.0f, 10.0f, 200f, w,h)) {
+                hosekWilkieModel.setTurbidity(valT[0]);
+                hosekWilkieModel.recalculate();
+            }
+            if (IAddedWindow.centeredSlider("Albedo", valA, 0.0f, 1.0f, 200f, w,h)) {
+                hosekWilkieModel.setAlbedo(Math.round(valA[0]));
+                hosekWilkieModel.recalculate();
+            }
+            if (IAddedWindow.centeredSlider("Sun Angular Radius", valAR, 0.0f, 1.0f, 200f, w,h)) {
+                hosekWilkieModel.setSunAngularRadius(valAR[0]);
+            }
+            if (IAddedWindow.centeredSlider("Glow Radius", valGR, 0.0f, 5.0f, 200f, w,h)) {
+                hosekWilkieModel.setGlowRadius(valGR[0]);
+            }
+            if (IAddedWindow.centeredVector3("Sun Color", valC, 0.0f, 1.0f, 200f, w, h)) {
+                hosekWilkieModel.setSunColor(new Vector3f(valC[0], valC[1], valC[2]));
+            }
+        });
 
         // Light
         float lightIntensity = 1.0f;
@@ -141,8 +173,8 @@ public class HosekWilkieScene implements ILogic {
                 cameraInc.y * Constants.CAMERA_MOVEMENT_SPEED,
                 cameraInc.z * Constants.CAMERA_MOVEMENT_SPEED);
 
-//        Vector3f pos = camera.getPosition();
-//        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
+        Vector3f pos = camera.getPosition();
+        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
 
 
         if (mouseInput.isRightButtonPressed()) {
@@ -150,9 +182,9 @@ public class HosekWilkieScene implements ILogic {
             camera.moveRotation(rotVec.x * Constants.MOUSE_SENSITIVITY, rotVec.y * Constants.MOUSE_SENSITIVITY, 0);
         }
 
-//        for (Terrain terrain : sceneManager.getTerrains()) {
-//            terrainRenderer.processTerrain(terrain);
-//        }
+        for (Terrain terrain : sceneManager.getTerrains()) {
+            terrainRenderer.processTerrain(terrain);
+        }
     }
 
     @Override

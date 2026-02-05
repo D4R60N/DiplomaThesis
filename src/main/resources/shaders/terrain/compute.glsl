@@ -51,7 +51,7 @@ vec4 ALPINE    = vec4(0.4, 0.4, 0.5, 1.0);
 vec4 SNOW      = vec4(1.0, 1.0, 1.0, 1.0);
 vec4 DESERT    = vec4(0.9, 0.8, 0.5, 1.0);
 vec4 GRASSLAND = vec4(0.45, 0.6, 0.3, 1.0);
-vec4 FOREST    = vec4(0.1, 0.5, 0.1, 1.0);
+vec4 FOREST    = vec4(0.1, 0.4, 0.1, 1.0);
 vec4 BEACH     = vec4(0.9, 0.85, 0.6, 1.0);
 vec4 MARSH     = vec4(0.3, 0.4, 0.3, 1.0);
 vec4 PLAINS    = vec4(0.6, 0.8, 0.4, 1.0);
@@ -76,18 +76,18 @@ void main() {
 
     // Biome selection based on elevation + moisture
     vec4 biome;
-    if (moisture > 0.6) {
-        biome = (elevation > 0.7) ? SNOW :
-        (elevation > 0.5) ? ALPINE :
-        (elevation > 0.3) ? FOREST : PLAINS;
-    } else if (moisture > 0.3) {
+//    if (moisture < 0.6) {
+//        biome = (elevation > 0.7) ? SNOW :
+//        (elevation > 0.5) ? ALPINE :
+//        (elevation > 0.3) ? FOREST : PLAINS;
+//    } else if (moisture < 0.3) {
         biome = (elevation > 0.65) ? SNOW :
         (elevation > 0.4) ? ALPINE :
         (elevation > 0.3) ? GRASSLAND : MARSH;
-    } else {
-        biome = (elevation > 0.7) ? ROCKY :
-        (elevation > 0.3) ? DESERT : BEACH;
-    }
+//    } else {
+//        biome = (elevation > 0.7) ? ROCKY :
+//        (elevation > 0.3) ? DESERT : BEACH;
+//    }
 
     elevation*=2;
     imageStore(heightMap, coord, vec4(elevation, 0.0, 0.0, 1.0));

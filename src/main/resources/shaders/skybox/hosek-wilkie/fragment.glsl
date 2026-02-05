@@ -14,6 +14,7 @@ uniform vec3 Z;
 uniform vec3 sunColor;
 uniform float sunAngularRadius;
 uniform float glowRadius;
+uniform float exposure;
 
 const float PI = 3.14159265359;
 
@@ -54,7 +55,6 @@ void main() {
     vec3 linearColor = L + (sunColor * (sunDisc + 0.2 * glow));
 
     // Tonemapping (exponential)
-    float exposure = 0.1;
     vec3 mapped = vec3(1.0) - exp(-linearColor * exposure);
 
     // Gamma correction

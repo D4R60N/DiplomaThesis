@@ -32,6 +32,7 @@ public class PreethamSkyboxModule implements IShaderModule {
         shaderManager.createUniform("sunColor");
         shaderManager.createUniform("sunAngularRadius");
         shaderManager.createUniform("glowRadius");
+        shaderManager.createUniform("exposure");
     }
 
     @Override
@@ -50,6 +51,7 @@ public class PreethamSkyboxModule implements IShaderModule {
         shaderManager.setUniform("sunColor", model.getSunColor());
         shaderManager.setUniform("sunAngularRadius", model.getSunAngularRadius());
         shaderManager.setUniform("glowRadius", model.getGlowRadius());
+        shaderManager.setUniform("exposure", model.getExposure());
     }
 
     @Override

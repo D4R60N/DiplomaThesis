@@ -6,6 +6,8 @@ import palecek.core.ShaderManager;
 import palecek.core.entity.IShaderModule;
 import palecek.core.utils.*;
 
+import static org.lwjgl.opengl.GL11C.glDeleteTextures;
+
 public class BrunetonPostprocessModule implements IShaderModule {
     private final BrunetonModel model;
     private Texture transmittanceTexture, irradianceTexture;

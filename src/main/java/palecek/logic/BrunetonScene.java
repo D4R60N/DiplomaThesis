@@ -1,5 +1,6 @@
 package palecek.logic;
 
+import imgui.ImGui;
 import org.joml.*;
 import palecek.Main;
 import palecek.bruneton.BrunetonModel;
@@ -8,18 +9,18 @@ import palecek.core.*;
 import palecek.core.entity.SceneManager;
 import palecek.core.gui.ImGuiLayer;
 import palecek.core.lighting.DirectionalLight;
-import palecek.core.planet.PlanetGenerator;
-import palecek.core.rendering.PlanetRenderer;
 import palecek.core.rendering.RenderManager;
 import palecek.core.rendering.TerrainRenderer;
 import palecek.core.terrain.Terrain;
 import palecek.core.terrain.TerrainGenerator;
 import palecek.core.utils.*;
 import palecek.core.utils.glfw.GLFWEnum;
+import palecek.gui.IAddedWindow;
 import palecek.gui.PauseMenu;
 
 import palecek.bruneton.BrunetonPrecompute;
 
+import java.lang.Math;
 import java.util.List;
 
 
@@ -28,8 +29,6 @@ public class BrunetonScene implements ILogic {
     private final ObjectLoader objectLoader;
     private WindowManager windowManager;
     private final SceneManager sceneManager;
-    private PlanetGenerator planetGenerator;
-    private PlanetRenderer planetRenderer;
     private BrunetonModel brunetonModel;
     private ImGuiLayer imGuiLayer;
     private boolean showGui;
@@ -56,40 +55,102 @@ public class BrunetonScene implements ILogic {
         windowManager = Main.getWindowManager();
         logicManager = Main.getLogicManager();
         showGui = false;
-        imGuiLayer = new PauseMenu(windowManager.getWindow(), logicManager, () -> showGui = false);
 
-        // Planet
-//        planetRenderer = new PlanetRenderer();
         BrunetonModel bruneton = new BrunetonModel();
         brunetonModel = bruneton;
         // renderManager init
-        BrunetonPrecompute brunetonPrecompute = new BrunetonPrecompute();
         Vector2i transmittanceSize = new Vector2i(256, 64);
         Vector2i irradianceSize = new Vector2i(64, 16);
         Vector4i scatteringSize = new Vector4i(32, 128, 32, 8);
-        ITexture[] textures = brunetonPrecompute.precompute(new ComputeShaderManager(), transmittanceSize, irradianceSize, scatteringSize, brunetonModel);
-
-//        ITexture[] texturesArray = {
-//                new Texture(transmittanceSize.x, transmittanceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/transmittance.dat", transmittanceSize.x, transmittanceSize.y, 1, 4)),
-//                new Texture(irradianceSize.x, irradianceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/irradiance.dat", irradianceSize.x, irradianceSize.y, 1, 4)),
-//                new Texture3D(scatteringSize.x, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, RawTextureExporter.loadRawTexture("images/bruneton/test/scattering.dat", scatteringSize.x, scatteringSize.y, scatteringSize.z, 4)),
-//                textures[3]
-//        };
+        BrunetonPrecompute brunetonPrecompute = new BrunetonPrecompute(transmittanceSize, irradianceSize, scatteringSize);
+        ITexture[] textures = brunetonPrecompute.precompute(new ComputeShaderManager(), brunetonModel);
 
         // Terrain
-//        terrainRenderer = new TerrainRenderer();
-//        int[] lods = {8, 16};
-//        short[] lodDistances = {8, 12};
-//        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
+        terrainRenderer = new TerrainRenderer();
+        int[] lods = {8, 16};
+        short[] lodDistances = {8, 12};
+        terrainGenerator = new TerrainGenerator(objectLoader, new ComputeShaderManager(), 500, 32, 36, 128, lods, lodDistances);
 
 
         BrunetonPostprocessModule brunetonPostprocessModule = new BrunetonPostprocessModule(brunetonModel, textures, scatteringSize, transmittanceSize, irradianceSize);
-        renderManager.init(List.of(brunetonPostprocessModule), "bruneton", camera);
+        renderManager.init(List.of(brunetonPostprocessModule), "bruneton", camera, terrainRenderer);
+        float[] valSolar = {brunetonModel.getSolarIrradiance().x, brunetonModel.getSolarIrradiance().y, brunetonModel.getSolarIrradiance().z};
+        float[] valBottomR = {brunetonModel.getBottomRadius()};
+        float[] valTopR = {brunetonModel.getTopRadius()};
+        float[] valRayleigh = {brunetonModel.getRayleighScattering().x, brunetonModel.getRayleighScattering().y, brunetonModel.getRayleighScattering().z};
+        float[] valMieS = {brunetonModel.getMieScattering().x, brunetonModel.getMieScattering().y, brunetonModel.getMieScattering().z};
+        float[] valMieG = {brunetonModel.getMiePhaseFunctionG()};
+        float[] valGAlbedo = {brunetonModel.getGroundAlbedo().x, brunetonModel.getGroundAlbedo().y, brunetonModel.getGroundAlbedo().z};
+        float[] valExp = {brunetonModel.getExposure()};
+        float[] valWhite = {brunetonModel.getWhitePoint().x, brunetonModel.getWhitePoint().y, brunetonModel.getWhitePoint().z};
+        float[] valSunDir = {brunetonModel.getSunDirection().x, brunetonModel.getSunDirection().y, brunetonModel.getSunDirection().z};
+        float[] valSunSize = {brunetonModel.getSunSize().x, brunetonModel.getSunSize().y};
 
-//        planetGenerator = new PlanetGenerator(objectLoader, new ComputeShaderManager());
-//        planetGenerator.createPlanet(0, 0, -1000, 200f, 2f, 0f, new Vector2f(0, 0), 1f, sceneManager, Planet.PlanetType.TEMPERATE);
+        imGuiLayer = new PauseMenu(windowManager.getWindow(), logicManager, () -> showGui = false, (w, h) -> {
+
+            if (IAddedWindow.centeredVector3("Solar Irradiance", valSolar, 0.0f, 100.0f, 200f, w, h)) {
+                brunetonModel.setSolarIrradiance(new Vector3f(valSolar[0], valSolar[1], valSolar[2]));
+            }
+
+            ImGui.separator();
+            ImGui.text("Planetary Parameters");
+
+            if (IAddedWindow.centeredVector3("Ground Albedo", valGAlbedo, 0.0f, 1.0f, 200f, w, h)) {
+                brunetonModel.setGroundAlbedo(new Vector3f(valGAlbedo[0], valGAlbedo[1], valGAlbedo[2]));
+            }
+
+            if (IAddedWindow.centeredSlider("Bottom Radius", valBottomR, 1000.0f, 10000.0f, 200f, w, h)) {
+                brunetonModel.setBottomRadius(valBottomR[0]);
+            }
 
 
+            if (IAddedWindow.centeredSlider("Top Radius", valTopR, 1000.0f, 10000.0f, 200f, w, h)) {
+                brunetonModel.setTopRadius(valTopR[0]);
+            }
+
+            ImGui.separator();
+            ImGui.text("Reyleigh / Mie Parameters");
+
+            if (IAddedWindow.centeredVector3("Rayleigh Scattering", valRayleigh, 0.0f, 0.1f, 200f, w, h)) {
+                brunetonModel.setRayleighScattering(new Vector3f(valRayleigh[0], valRayleigh[1], valRayleigh[2]));
+            }
+
+            if (IAddedWindow.centeredVector3("Mie Scattering", valMieS, 0.0f, 0.1f, 200f, w, h)) {
+                brunetonModel.setMieScattering(new Vector3f(valMieS[0], valMieS[1], valMieS[2]));
+            }
+
+            if (IAddedWindow.centeredSlider("Mie Phase G", valMieG, -0.999f, 0.999f, 200f, w, h)) {
+                brunetonModel.setMiePhaseFunctionG(valMieG[0]);
+            }
+
+            ImGui.separator();
+            ImGui.text("Rendering Parameters");
+
+            if (IAddedWindow.centeredSlider("Exposure", valExp, 0.0f, 10.0f, 200f, w, h)) {
+                brunetonModel.setExposure(valExp[0]);
+            }
+
+            if (IAddedWindow.centeredVector3("White Point", valWhite, 0.0f, 2.0f, 200f, w, h)) {
+                brunetonModel.setWhitePoint(new Vector3f(valWhite[0], valWhite[1], valWhite[2]));
+            }
+
+            if (IAddedWindow.centeredVector3("Sun Direction", valSunDir, -1.0f, 1.0f, 200f, w, h)) {
+                brunetonModel.setSunDirection(new Vector3f(valSunDir[0], valSunDir[1], valSunDir[2]));
+            }
+
+            if (IAddedWindow.centeredVector2("Sun Size", valSunSize, 0.0f, 1.0f, 200f, w, h)) {
+                brunetonModel.setSunSize(new Vector2f(valSunSize[0], valSunSize[1]));
+            }
+
+            if (IAddedWindow.centeredButton("Recompute Atmosphere", 200f, 100f, w, h)) {
+                try {
+                    brunetonPrecompute.precompute(new ComputeShaderManager(), brunetonModel);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+        
         // Light
         float lightIntensity = 1.0f;
         Vector3f lightPosition = new Vector3f(1f, 0f, 1f);
@@ -145,19 +206,16 @@ public class BrunetonScene implements ILogic {
         camera.movePosition(cameraInc.x * Constants.CAMERA_MOVEMENT_SPEED,
                 cameraInc.y * Constants.CAMERA_MOVEMENT_SPEED,
                 cameraInc.z * Constants.CAMERA_MOVEMENT_SPEED);
-//        Vector3f pos = camera.getPosition();
-//        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
+        Vector3f pos = camera.getPosition();
+        terrainGenerator.updateChunksAround((int) pos.x, (int) pos.z, sceneManager);
         if (mouseInput.isRightButtonPressed()) {
             Vector2f rotVec = mouseInput.getDisplVec();
             camera.moveRotation(rotVec.x * Constants.MOUSE_SENSITIVITY, rotVec.y * Constants.MOUSE_SENSITIVITY, 0);
         }
 
-//        for (Planet planet : sceneManager.getPlanets()) {
-//            planetRenderer.processPlanet(planet);
-//        }
-//        for (Terrain terrain : sceneManager.getTerrains()) {
-//            terrainRenderer.processTerrain(terrain);
-//        }
+        for (Terrain terrain : sceneManager.getTerrains()) {
+            terrainRenderer.processTerrain(terrain);
+        }
     }
 
     @Override

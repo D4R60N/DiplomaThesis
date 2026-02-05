@@ -174,4 +174,144 @@ public class HillarieModel {
     public boolean isSmall() {
         return isSmall;
     }
+
+    public float getBottomRadius() {
+        return bottomRadius;
+    }
+
+    public void setBottomRadius(float bottomRadius) {
+        this.bottomRadius = bottomRadius;
+    }
+
+    public float getTopRadius() {
+        return topRadius;
+    }
+
+    public void setTopRadius(float topRadius) {
+        this.topRadius = topRadius;
+    }
+
+    public float getRayleighDensityExpScale() {
+        return rayleighDensityExpScale;
+    }
+
+    public void setRayleighDensityExpScale(float rayleighDensityExpScale) {
+        this.rayleighDensityExpScale = rayleighDensityExpScale;
+    }
+
+    public Vector3f getRayleighScattering() {
+        return rayleighScattering;
+    }
+
+    public void setRayleighScattering(Vector3f rayleighScattering) {
+        this.rayleighScattering = rayleighScattering;
+    }
+
+    public float getMieDensityExpScale() {
+        return mieDensityExpScale;
+    }
+
+    public void setMieDensityExpScale(float mieDensityExpScale) {
+        this.mieDensityExpScale = mieDensityExpScale;
+    }
+
+    public Vector3f getMieScattering() {
+        return mieScattering;
+    }
+
+    public void setMieScattering(Vector3f mieScattering) {
+        this.mieScattering = mieScattering;
+    }
+
+    public Vector3f getMieExtinction() {
+        return mieExtinction;
+    }
+
+    public void setMieExtinction(Vector3f mieExtinction) {
+        this.mieExtinction = mieExtinction;
+    }
+
+    public Vector3f getMieAbsorption() {
+        return mieAbsorption;
+    }
+
+    public void setMieAbsorption(Vector3f mieAbsorption) {
+        this.mieAbsorption = mieAbsorption;
+    }
+
+    public float getMiePhaseG() {
+        return miePhaseG;
+    }
+
+    public void setMiePhaseG(float miePhaseG) {
+        this.miePhaseG = miePhaseG;
+    }
+
+    public float getAbsorptionDensity0LayerWidth() {
+        return absorptionDensity0LayerWidth;
+    }
+
+    public void setAbsorptionDensity0LayerWidth(float absorptionDensity0LayerWidth) {
+        this.absorptionDensity0LayerWidth = absorptionDensity0LayerWidth;
+    }
+
+    public float getAbsorptionDensity0ConstantTerm() {
+        return absorptionDensity0ConstantTerm;
+    }
+
+    public void setAbsorptionDensity0ConstantTerm(float absorptionDensity0ConstantTerm) {
+        this.absorptionDensity0ConstantTerm = absorptionDensity0ConstantTerm;
+    }
+
+    public float getAbsorptionDensity0LinearTerm() {
+        return absorptionDensity0LinearTerm;
+    }
+
+    public void setAbsorptionDensity0LinearTerm(float absorptionDensity0LinearTerm) {
+        this.absorptionDensity0LinearTerm = absorptionDensity0LinearTerm;
+    }
+
+    public float getAbsorptionDensity1ConstantTerm() {
+        return absorptionDensity1ConstantTerm;
+    }
+
+    public void setAbsorptionDensity1ConstantTerm(float absorptionDensity1ConstantTerm) {
+        this.absorptionDensity1ConstantTerm = absorptionDensity1ConstantTerm;
+    }
+
+    public float getAbsorptionDensity1LinearTerm() {
+        return absorptionDensity1LinearTerm;
+    }
+
+    public void setAbsorptionDensity1LinearTerm(float absorptionDensity1LinearTerm) {
+        this.absorptionDensity1LinearTerm = absorptionDensity1LinearTerm;
+    }
+
+    public Vector3f getAbsorptionExtinction() {
+        return absorptionExtinction;
+    }
+
+    public void setAbsorptionExtinction(Vector3f absorptionExtinction) {
+        this.absorptionExtinction = absorptionExtinction;
+    }
+
+    public Vector3f getGroundAlbedo() {
+        return groundAlbedo;
+    }
+
+    public void setGroundAlbedo(Vector3f groundAlbedo) {
+        this.groundAlbedo = groundAlbedo;
+    }
+
+    public void setExposure(float exposure) {
+        this.exposure = exposure;
+    }
+
+    public void setSunIlluminance(Vector3f sunIlluminance) {
+        this.sunIlluminance = sunIlluminance;
+    }
+
+    public void setSunDirection(Vector3f sunDirection) {
+        this.sunDirection = sunDirection;
+    }
 }

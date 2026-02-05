@@ -177,11 +177,7 @@ public class HillariePrecompute {
         computeShaderManager.createUniform("RayMarchMinMaxSPP");
         computeShaderManager.createUniform("sunIlluminance");
         model.createUniforms(computeShaderManager, "uAtmosphere");
-
-        computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
-        computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
         computeShaderManager.setUniform("RayMarchMinMaxSPP", new Vector2f(4.0f, 14.0f));
-        model.setUniforms(computeShaderManager, "uAtmosphere");
     }
 
     public void precomputeMultiScattering(HillarieModel model) {
@@ -192,6 +188,9 @@ public class HillariePrecompute {
 
         computeShaderManager.setUniform("sunIlluminance", model.getSunIlluminance());
         computeShaderManager.setUniform("sunDirection", model.getSunDirection());
+        computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
+        computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
+        model.setUniforms(computeShaderManager, "uAtmosphere");
 
         glBindImageTexture(0, multipleScatteringMap.getId(), 0, false, 0, GL_WRITE_ONLY, GL_RGBA32F);
         transmittanceMap.bind(
@@ -218,13 +217,8 @@ public class HillariePrecompute {
         computeShaderManager.createUniform("camera");
         computeShaderManager.createUniform("isSmall");
         model.createUniforms(computeShaderManager, "uAtmosphere");
-
-        computeShaderManager.setUniform("uSkyViewTextureSize", skyViewSize);
-        computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
-        computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
-        computeShaderManager.setUniform("RayMarchMinMaxSPP", new Vector2f(4.0f, 14.0f));
         computeShaderManager.setUniform("isSmall", model.isSmall());
-        model.setUniforms(computeShaderManager, "uAtmosphere");
+        computeShaderManager.setUniform("RayMarchMinMaxSPP", new Vector2f(4.0f, 14.0f));
     }
 
     public void precomputeSkyView(HillarieModel model, Camera camera) {
@@ -236,6 +230,10 @@ public class HillariePrecompute {
         computeShaderManager.setUniform("sunIlluminance", model.getSunIlluminance());
         computeShaderManager.setUniform("sunDirection", model.getSunDirection());
         computeShaderManager.setUniform("camera", camera.getPosition());
+        computeShaderManager.setUniform("uSkyViewTextureSize", skyViewSize);
+        computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
+        computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
+        model.setUniforms(computeShaderManager, "uAtmosphere");
 
         glBindImageTexture(0, skyViewMap.getId(), 0, false, 0, GL_WRITE_ONLY, GL_RGBA32F);
         transmittanceMap.bind(
@@ -271,12 +269,8 @@ public class HillariePrecompute {
         computeShaderManager.createUniform("isSmall");
         model.createUniforms(computeShaderManager, "uAtmosphere");
 
-        computeShaderManager.setUniform("uAerialPerspectiveTextureSize", aerialPerspectiveSize);
-        computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
-        computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
         computeShaderManager.setUniform("RayMarchMinMaxSPP", new Vector2f(4.0f, 14.0f));
         computeShaderManager.setUniform("isSmall", model.isSmall());
-        model.setUniforms(computeShaderManager, "uAtmosphere");
     }
 
     public void precomputeAerialPerspective(HillarieModel model, Camera camera) {
@@ -296,6 +290,10 @@ public class HillariePrecompute {
         computeShaderManager.setUniform("invViewProj", projectionMatrix.invertPerspectiveView(viewMatrix, invViewProj));
         computeShaderManager.setUniform("sunDirection", model.getSunDirection());
         computeShaderManager.setUniform("camera", camera.getPosition());
+        computeShaderManager.setUniform("uAerialPerspectiveTextureSize", aerialPerspectiveSize);
+        computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
+        computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
+        model.setUniforms(computeShaderManager, "uAtmosphere");
 
         glBindImageTexture(0, aerialPerspectiveMap.getId(), 0, true, 0, GL_WRITE_ONLY, GL_RGBA32F);
         transmittanceMap.bind(

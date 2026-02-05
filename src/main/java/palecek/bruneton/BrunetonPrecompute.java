@@ -23,16 +23,30 @@ import static org.lwjgl.opengles.GLES31.*;
 
 public class BrunetonPrecompute {
 
-    public ITexture[] precompute(ComputeShaderManager computeShaderManager, Vector2i transmittanceSize, Vector2i irradianceSize, Vector4i scatteringSize, BrunetonModel model) throws Exception {
-        Texture transmittanceMap = new Texture(transmittanceSize.x, transmittanceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
-        int width = scatteringSize.x*scatteringSize.w;
-        Texture3D scatteringMap = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
-        Texture3D accumulatedScatteringMap = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
-        Texture3D singleMieScatteringMap = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
-        Texture irradianceMap = new Texture(irradianceSize.x, irradianceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
-        Texture accumulatedIrradianceMap = new Texture(irradianceSize.x, irradianceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
-        Texture3D scatteringDensityMap = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
-        Texture3D scatteringDensityMapDisplay = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+    private Texture3D scatteringMap, accumulatedScatteringMap, singleMieScatteringMap, scatteringDensityMap, scatteringDensityMapDisplay;
+    private Texture transmittanceMap, irradianceMap, accumulatedIrradianceMap;
+    private final Vector2i transmittanceSize, irradianceSize;
+    private final Vector4i scatteringSize;
+    private final int width;
+
+    public BrunetonPrecompute(Vector2i transmittanceSize, Vector2i irradianceSize, Vector4i scatteringSize) {
+        transmittanceMap = new Texture(transmittanceSize.x, transmittanceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+        int width = scatteringSize.x * scatteringSize.w;
+        scatteringMap = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+        accumulatedScatteringMap = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+        singleMieScatteringMap = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+        irradianceMap = new Texture(irradianceSize.x, irradianceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+        accumulatedIrradianceMap = new Texture(irradianceSize.x, irradianceSize.y, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+        scatteringDensityMap = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+        scatteringDensityMapDisplay = new Texture3D(width, scatteringSize.y, scatteringSize.z, GL_RGBA32F, GL_RGBA, GL_FLOAT, null);
+        this.transmittanceSize = transmittanceSize;
+        this.irradianceSize = irradianceSize;
+        this.scatteringSize = scatteringSize;
+        this.width = width;
+    }
+
+    public ITexture[] precompute(ComputeShaderManager computeShaderManager, BrunetonModel model) throws Exception {
+
 
         int groupsX = (int) Math.ceil((double) transmittanceSize.x / 8);
         int groupsY = (int) Math.ceil((double) transmittanceSize.y / 8);
@@ -221,7 +235,7 @@ public class BrunetonPrecompute {
             computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
             computeShaderManager.setUniform("uIrradianceTextureSize", irradianceSize);
             computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
-            computeShaderManager.setUniform("order", order-1);
+            computeShaderManager.setUniform("order", order - 1);
             model.setUniforms(computeShaderManager, "uAtmosphere");
 
             transmittanceMap.bind(
@@ -244,7 +258,7 @@ public class BrunetonPrecompute {
                     "multipleScatteringSampler",
                     3
             );
-            if(order == 2) {
+            if (order == 2) {
                 accumulatedIrradianceMap.bind(
                         computeShaderManager.getShaderProgram(),
                         "irradianceSampler",
@@ -293,7 +307,7 @@ public class BrunetonPrecompute {
             computeShaderManager.setUniform("uScatteringTextureSize", scatteringSize);
             computeShaderManager.setUniform("uIrradianceTextureSize", irradianceSize);
             computeShaderManager.setUniform("uTransmittanceTextureSize", transmittanceSize);
-            computeShaderManager.setUniform("order", order-1);
+            computeShaderManager.setUniform("order", order - 1);
             model.setUniforms(computeShaderManager, "uAtmosphere");
 
 
@@ -390,13 +404,6 @@ public class BrunetonPrecompute {
             );
         }
 
-        glDeleteTextures(
-                new int[]{
-                        irradianceMap.getId(),
-                        scatteringMap.getId(),
-                        scatteringDensityMap.getId()
-                }
-        );
         return new ITexture[]{transmittanceMap, accumulatedIrradianceMap, accumulatedScatteringMap, singleMieScatteringMap};
     }
 }

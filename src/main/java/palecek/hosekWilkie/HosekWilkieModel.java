@@ -2,7 +2,6 @@ package palecek.hosekWilkie;
 
 import org.joml.Vector3f;
 import palecek.data.HosekWilkieData;
-import palecek.data.HosekWilkieDataCIEXYZ;
 import palecek.data.HosekWilkieDataRGB;
 import palecek.utils.SunVector;
 
@@ -16,14 +15,16 @@ public class HosekWilkieModel {
     private int albedo;
     private Vector3f Z;
     private HosekWilkieData data = new HosekWilkieDataRGB();
+    private float exposure;
 
-    public HosekWilkieModel(SunVector sunDir, Vector3f sunColor, float sunAngularRadius, float glowRadius, float turbidity, int albedo) {
+    public HosekWilkieModel(SunVector sunDir, Vector3f sunColor, float sunAngularRadius, float glowRadius, float turbidity, int albedo, float exposure) {
         this.glowRadius = glowRadius;
         this.sunAngularRadius = sunAngularRadius;
         this.sunColor = sunColor;
         this.sunDir = sunDir;
         this.turbidity = turbidity;
         this.albedo = albedo;
+        this.exposure = exposure;
         float elevation = sunDir.getElevation();
         lookUpCoefficients(turbidity, albedo, elevation);
     }
@@ -57,6 +58,10 @@ public class HosekWilkieModel {
         return new Vector3f(r, g, b);
     }
 
+    public void recalculate() {
+        float elevation = sunDir.getElevation();
+        lookUpCoefficients(turbidity, albedo, elevation);
+    }
 
     private double evaluateSpline(double[] dataset, int baseIndex, int stride, double value) {
         return  Math.pow(1 - value, 5) * dataset[baseIndex + 0] +
@@ -216,6 +221,7 @@ public class HosekWilkieModel {
         return turbidity;
     }
 
+
     public void setTurbidity(float turbidity) {
         this.turbidity = turbidity;
     }
@@ -228,4 +234,11 @@ public class HosekWilkieModel {
         this.albedo = albedo;
     }
 
+    public float getExposure() {
+        return exposure;
+    }
+
+    public void setExposure(float exposure) {
+        this.exposure = exposure;
+    }
 }

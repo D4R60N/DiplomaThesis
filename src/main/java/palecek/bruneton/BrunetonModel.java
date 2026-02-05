@@ -377,4 +377,24 @@ public class BrunetonModel {
     public Vector2f getSunSize() {
         return sunSize;
     }
+
+    public void setExposure(float exposure) {
+        this.exposure = exposure;
+    }
+
+    public void setWhitePoint(Vector3f whitePoint) {
+        this.whitePoint = whitePoint;
+    }
+
+    public void setEarthCenter(Vector3f earthCenter) {
+        this.earthCenter = earthCenter;
+    }
+
+    public void setSunDirection(Vector3f sunDirection) {
+        this.sunDirection = sunDirection;
+    }
+
+    public void setSunSize(Vector2f sunSize) {
+        this.sunSize = sunSize;
+    }
 }

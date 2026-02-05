@@ -12,8 +12,9 @@ public class PreethamModel {
     private float glowRadius;
     private float turbidity;
     private float sunAngle;
+    private float exposure;
 
-    public PreethamModel(SunVector sunDir, Vector3f A, Vector3f B, Vector3f C, Vector3f D, Vector3f E, Vector3f Z, Vector3f sunColor, float sunAngularRadius, float glowRadius, float turbidity, float sunAngle) {
+    public PreethamModel(SunVector sunDir, Vector3f A, Vector3f B, Vector3f C, Vector3f D, Vector3f E, Vector3f Z, Vector3f sunColor, float sunAngularRadius, float glowRadius, float turbidity, float sunAngle, float exposure) {
         this.glowRadius = glowRadius;
         this.sunAngularRadius = sunAngularRadius;
         this.sunColor = sunColor;
@@ -26,6 +27,7 @@ public class PreethamModel {
         this.sunDir = sunDir;
         this.turbidity = turbidity;
         this.sunAngle = sunAngle;
+        this.exposure = exposure;
     }
 
     public void rotateSun(float rotateBy) {
@@ -36,6 +38,13 @@ public class PreethamModel {
         Z = computeZenith(turbidity, (float) Math.toRadians(sunAngle));
     }
 
+    public float getExposure() {
+        return exposure;
+    }
+
+    public void setExposure(float exposure) {
+        this.exposure = exposure;
+    }
 
     public SunVector getSunDir() {
         return sunDir;
@@ -129,6 +138,10 @@ public class PreethamModel {
     }
     public void setSunAngle(float sunAngle) {
         this.sunAngle = sunAngle;
+    }
+
+    public void recomputeZenith() {
+        this.Z = computeZenith(turbidity, (float)Math.toRadians(sunAngle));
     }
 
     public static Vector3f computeZenith(float turbidity, float thetaSun) {
