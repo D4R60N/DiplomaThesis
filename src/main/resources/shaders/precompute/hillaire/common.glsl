@@ -1,3 +1,7 @@
+// Based on "A Scalable and Production Ready Sky and Atmosphere Rendering Technique"
+// by Sébastien Hillaire (2020).
+// Original code: Copyright (c) 2020 Sébastien Hillaire (MIT License).
+// See THIRD_PARTY_NOTICES.md for the full license text.
 #define PI 3.1415926535897932384626433832795f
 #define NONLINEARSKYVIEWLUT 1
 #define ILLUMINANCE_IS_ONE 1

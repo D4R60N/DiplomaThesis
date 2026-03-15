@@ -1,3 +1,7 @@
+// Based on Eric Bruneton's atmospheric scattering model.
+// Original code: Copyright (c) 2017 Eric Bruneton.
+// Licensed under the BSD 3-Clause License.
+// See THIRD_PARTY_NOTICES.md for the full license text.
 #define Length float
 #define Wavelength float
 #define Angle float
