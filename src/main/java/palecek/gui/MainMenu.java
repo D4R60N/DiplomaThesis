@@ -4,6 +4,7 @@ import imgui.ImGui;
 import imgui.flag.ImGuiCond;
 import imgui.flag.ImGuiStyleVar;
 import imgui.flag.ImGuiWindowFlags;
+import palecek.Main;
 import palecek.core.LogicManager;
 import palecek.core.MouseInput;
 import palecek.core.gui.ImGuiLayer;
@@ -72,7 +73,7 @@ public class MainMenu extends ImGuiLayer {
         }
 
         if (centeredButton("Quit", 200, 30)) {
-
+            Main.quit();
         }
 
 

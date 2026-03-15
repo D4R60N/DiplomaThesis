@@ -6,7 +6,6 @@ import palecek.core.WindowManager;
 import palecek.core.utils.Constants;
 import palecek.logic.*;
 
-import java.io.Console;
 import java.util.List;
 
 public class Main {
@@ -34,6 +33,10 @@ public class Main {
 
     public static WindowManager getWindowManager() {
         return windowManager;
+    }
+
+    public static void quit() {
+        windowManager.quit();
     }
 
     public static LogicManager getLogicManager() {
